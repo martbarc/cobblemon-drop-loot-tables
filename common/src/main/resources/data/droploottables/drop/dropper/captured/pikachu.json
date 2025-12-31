@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:captured",
+  "matcher": [
+    "pikachu"
+  ],
+  "tables": [
+    "droploottables:captured/pikachu"
+  ]
+}

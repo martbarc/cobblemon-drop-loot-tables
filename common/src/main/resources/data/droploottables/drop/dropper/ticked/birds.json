@@ -1,0 +1,11 @@
+{
+  "trigger": "droploottables:ticked",
+  "ticks": 20,
+  "is_wild": true,
+  "matcher": [
+    "pidgey"
+  ],
+  "tables": [
+    "droploottables:ticked/birds"
+  ]
+}

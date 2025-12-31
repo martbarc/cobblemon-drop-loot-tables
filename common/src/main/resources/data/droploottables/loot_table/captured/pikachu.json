@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:generic",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:yellow_wool"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}
