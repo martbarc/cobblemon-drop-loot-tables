@@ -18,6 +18,9 @@ import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
+/**
+ * Fires when a Pokémon entity ticks in-world.
+ */
 class TickedDropper(
     override val trigger: ResourceLocation,
     override val matcher: List<PokemonMatcher>,

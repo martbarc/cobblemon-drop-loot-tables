@@ -17,10 +17,10 @@ object TickedHandler : DropHandler<TickedDropper.Context, TickedDropper, Pokemon
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: PokemonEntityTickedEvent) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.OWNER to { evt ->
+            DropLootTables.DataKeys.DropTargetTypes.OWNER_INVENTORY to { evt ->
                 evt.entity.pokemon.getOwnerPlayer()?.let(::PlayerDropTarget)
             },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON to { evt -> PokemonEntityDropTarget(evt.entity) }
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> PokemonEntityDropTarget(evt.entity) }
         )
 
     override val selectedDropTargetTypes: List<ResourceLocation>

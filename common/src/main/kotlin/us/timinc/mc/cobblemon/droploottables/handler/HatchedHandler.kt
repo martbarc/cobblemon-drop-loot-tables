@@ -10,6 +10,7 @@ import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.dropper.HatchedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemTarget
 
 object HatchedHandler : DropHandler<HatchedDropper.Context, HatchedDropper, HatchEggEvent.Post> {
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.HATCHED
@@ -24,7 +25,8 @@ object HatchedHandler : DropHandler<HatchedDropper.Context, HatchedDropper, Hatc
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: HatchEggEvent.Post) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.OWNER to { evt -> PlayerDropTarget(evt.player) }
+            DropLootTables.DataKeys.DropTargetTypes.OWNER_INVENTORY to { evt -> PlayerDropTarget(evt.player) },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.pokemon) }
         )
 
     override val selectedDropTargetTypes: List<ResourceLocation>

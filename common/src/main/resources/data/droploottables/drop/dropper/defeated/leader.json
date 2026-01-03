@@ -1,0 +1,14 @@
+{
+  "trigger": "droploottables:defeated",
+  "matcher": [
+    "kingambit"
+  ],
+  "byMatcher": [
+    "pawniard",
+    "bisharp"
+  ],
+  "tables": [
+    "droploottables:defeated/leader"
+  ],
+  "preserveBaseDrops": true
+}

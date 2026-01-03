@@ -15,7 +15,7 @@ import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
 import us.timinc.mc.cobblemon.droploottables.data.DropperDataManager
 import us.timinc.mc.cobblemon.droploottables.dropper.*
-import us.timinc.mc.cobblemon.droploottables.event.SingleBattleVictoryEvent
+import us.timinc.mc.cobblemon.droploottables.event.SingleDefeatEvent
 import us.timinc.mc.cobblemon.droploottables.handler.*
 import us.timinc.mc.cobblemon.timcore.AbstractConfig
 import us.timinc.mc.cobblemon.timcore.AbstractMod
@@ -25,11 +25,12 @@ const val MOD_ID: String = "droploottables"
 
 object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID, DropLootTablesConfig::class.java) {
     class DropLootTablesConfig : AbstractConfig() {
-        val tickedDropTargets: List<String> = listOf("pokemon")
-        val capturedDropTargets: List<String> = listOf("owner")
-        val hatchedDropTargets: List<String> = listOf("owner")
-        val evolutionDropTargets: List<String> = listOf("owner")
-        val victoryDropTargets: List<String> = listOf("owner")
+        val tickedDropTargets: List<String> = listOf("pokemon_world_position")
+        val capturedDropTargets: List<String> = listOf("owner_inventory")
+        val hatchedDropTargets: List<String> = listOf("owner_inventory")
+        val evolutionDropTargets: List<String> = listOf("owner_inventory")
+        val victoryDropTargets: List<String> = listOf("owner_inventory")
+        val defeatedDropTargets: List<String> = listOf("pokemon_world_position")
     }
 
     object DataKeys {
@@ -40,19 +41,20 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         object DropperTypes {
             val CAPTURED = modResource("captured")
             val DEFEATED = modResource("defeated")
-            val HATCHED = modResource("hatched")
             val EVOLVED = modResource("evolved")
-            val RESURRECTED = modResource("resurrected")
+            val HATCHED = modResource("hatched")
             val KILLED = modResource("killed")
-            val TICKED = modResource("ticked")
             val RELEASED = modResource("released")
+            val RESURRECTED = modResource("resurrected")
             val STARTER_CHOSEN = modResource("starter_chosen")
+            val TICKED = modResource("ticked")
             val VICTORY = modResource("victory")
         }
 
         object DropTargetTypes {
-            val OWNER = modResource("owner")
-            val POKEMON = modResource("pokemon")
+            val OWNER_INVENTORY = modResource("owner_inventory")
+            val POKEMON_WORLD_POSITION = modResource("pokemon_world_position")
+            val POKEMON_HELD_ITEM = modResource("pokemon_held_item")
         }
     }
 
@@ -66,7 +68,6 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         val KILLED = register(DataKeys.DropperTypes.KILLED, KilledDropper.DROPPER_TYPE)
         val RELEASED = register(DataKeys.DropperTypes.RELEASED, ReleasedDropper.DROPPER_TYPE)
         val STARTER_CHOSEN = register(DataKeys.DropperTypes.STARTER_CHOSEN, StarterChosenDropper.DROPPER_TYPE)
-        val VICTORY = register(DataKeys.DropperTypes.VICTORY, VictoryDropper.DROPPER_TYPE)
 
         fun <C : DropContext, T : Dropper<C>> register(
             id: ResourceLocation,
@@ -82,33 +83,28 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         val RELEVANT_PLAYER: LootContextParam<ServerPlayer> = LootContextParam(modResource("relevant_player"))
     }
 
-    object Event {
-        val SINGLE_BATTLE_VICTORY = EventObservable<SingleBattleVictoryEvent>()
+    object Events {
+        val SINGLE_DEFEAT = EventObservable<SingleDefeatEvent>()
     }
-
 
     init {
         DropperTypes
 
         registerReloadListener(DropperDataManager)
 
+        CobblemonEvents.LOOT_DROPPED.subscribe(Priority.NORMAL, BaseDropCatcher::handle)
         CobblemonEvents.POKEMON_CAPTURED.subscribe(Priority.LOWEST, CapturedHandler::handle)
         CobblemonEvents.HATCH_EGG_POST.subscribe(Priority.LOWEST, HatchedHandler::handle)
         CobblemonEvents.EVOLUTION_COMPLETE.subscribe(Priority.LOWEST, EvolvedHandler::handle)
-        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
-        Event.SINGLE_BATTLE_VICTORY.subscribe(Priority.LOWEST, VictoryHandler::handle)
-        CobblemonEvents.BATTLE_VICTORY.subscribe { evt ->
-            Event.SINGLE_BATTLE_VICTORY.post(
-                *(evt.winners.flatMap { winner ->
-                    winner.pokemonList.map { pokemon ->
-                        SingleBattleVictoryEvent(
-                            pokemon.effectedPokemon,
-                            pokemon.facedOpponents.isNotEmpty(),
-                            evt
-                        )
-                    }
-                }.toTypedArray())
-            )
+        CobblemonEvents.BATTLE_FAINTED.subscribe(Priority.LOWEST) { evt ->
+            val loser = evt.killed
+            val winners = loser.facedOpponents
+
+            Events.SINGLE_DEFEAT.post(*(winners.map { winner -> SingleDefeatEvent(winner, loser, evt.battle) }
+                .toTypedArray()))
         }
+        Events.SINGLE_DEFEAT.subscribe(Priority.LOWEST, DefeatedHandler::handle)
+        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
+        CobblemonEvents.EVOLUTION_ACCEPTED.subscribe(Priority.LOWEST, EvolvedHandler::tagPrevious)
     }
 }

@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:hatched",
+  "matcher": [
+    "ponyta form=Normal"
+  ],
+  "tables": [
+    "droploottables:hatched/ponyta"
+  ]
+}

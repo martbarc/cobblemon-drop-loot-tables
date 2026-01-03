@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:hatched",
+  "matcher": [
+    "ponyta form=Galar"
+  ],
+  "tables": [
+    "droploottables:hatched/ponyta_galarian"
+  ]
+}

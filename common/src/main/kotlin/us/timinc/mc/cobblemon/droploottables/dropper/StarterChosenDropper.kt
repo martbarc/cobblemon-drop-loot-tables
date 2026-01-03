@@ -16,6 +16,9 @@ import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
 import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
+/**
+ * Fires when a player chooses a starter.
+ */
 class StarterChosenDropper(
     override val trigger: ResourceLocation,
     override val matcher: List<PokemonMatcher>,

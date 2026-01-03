@@ -1,0 +1,10 @@
+{
+  "trigger": "droploottables:evolved",
+  "matcher": [
+    "accelgor"
+  ],
+  "tables": [
+    "droploottables:evolved/testing"
+  ],
+  "preserveBaseDrops": true
+}

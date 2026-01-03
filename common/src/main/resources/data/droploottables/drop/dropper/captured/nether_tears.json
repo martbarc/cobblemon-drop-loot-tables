@@ -1,9 +1,9 @@
 {
   "trigger": "droploottables:captured",
   "matcher": [
-    "pikachu"
+    "type=ghost"
   ],
   "tables": [
-    "droploottables:captured/pikachu"
+    "droploottables:captured/nether_tears"
   ]
 }

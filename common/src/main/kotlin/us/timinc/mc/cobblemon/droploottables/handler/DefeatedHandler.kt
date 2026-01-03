@@ -1,31 +1,73 @@
 package us.timinc.mc.cobblemon.droploottables.handler
 
-import com.cobblemon.mod.common.api.events.battles.BattleFaintedEvent
+import com.cobblemon.mod.common.api.drop.DropEntry
+import com.cobblemon.mod.common.api.drop.ItemDropEntry
+import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.item.ItemStack
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
+import us.timinc.mc.cobblemon.droploottables.MOD_ID
 import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
+import us.timinc.mc.cobblemon.droploottables.api.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.DefeatedDropper
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemTarget
+import us.timinc.mc.cobblemon.droploottables.event.SingleDefeatEvent
+import java.util.*
 
-object DefeatedHandler : DropHandler<DefeatedDropper.Context, DefeatedDropper, BattleFaintedEvent> {
+object DefeatedHandler : DropHandler<DefeatedDropper.Context, DefeatedDropper, SingleDefeatEvent> {
+    val baseDrops: MutableMap<UUID, List<DropEntry>> = mutableMapOf()
+
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.DEFEATED
 
-    override fun handle(evt: BattleFaintedEvent) {
+    override val dropTargetTypes: MutableMap<ResourceLocation, (evt: SingleDefeatEvent) -> DropTarget?> =
+        mutableMapOf(
+            DropLootTables.DataKeys.DropTargetTypes.OWNER_INVENTORY to { evt -> PlayerDropTarget(evt.winner.effectedPokemon.getOwnerPlayer()!!) },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.loser.entity?.let(::PokemonEntityDropTarget) },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.winner.effectedPokemon) },
+        )
 
+    override val selectedDropTargetTypes: List<ResourceLocation>
+        get() = DropLootTables.config.defeatedDropTargets.map { it.asIdentifierDefaultingNamespace(MOD_ID) }
+
+    fun registerDropTargetType(id: ResourceLocation, getter: (evt: SingleDefeatEvent) -> DropTarget?) {
+        dropTargetTypes[id] = getter
     }
 
-    override fun getContext(evt: BattleFaintedEvent): DefeatedDropper.Context = DefeatedDropper.Context(
-        evt.killed.effectedPokemon,
-        evt.killed.facedOpponents.first {  }
+    override fun getContext(evt: SingleDefeatEvent): DefeatedDropper.Context = DefeatedDropper.Context(
+        evt.loser.effectedPokemon,
+        evt.winner.effectedPokemon.getOwnerPlayer()!!.level() as ServerLevel,
+        evt.winner.effectedPokemon.getOwnerPlayer()!!,
+        evt.winner.effectedPokemon
     )
 
-    override fun getLevel(evt: BattleFaintedEvent): ServerLevel? {
-        TODO("Not yet implemented")
+    override fun getLevel(evt: SingleDefeatEvent): ServerLevel =
+        evt.winner.effectedPokemon.getOwnerPlayer()!!.level() as ServerLevel
+
+    override fun isRelevantEvent(evt: SingleDefeatEvent): Boolean = evt.winner.effectedPokemon.getOwnerPlayer() != null
+
+    override fun processOtherDrops(evt: SingleDefeatEvent): List<ItemStack> {
+        val ctx = getContext(evt)
+        val droppers = getDroppers(ctx) ?: emptyList()
+        if (!droppers.any(DefeatedDropper::preserveBaseDrops)) return emptyList()
+
+        val caughtBaseDrops = baseDrops[evt.winner.uuid] ?: emptyList()
+
+        return caughtBaseDrops.mapNotNull { baseDrop ->
+            if (baseDrop !is ItemDropEntry) {
+                val pos = evt.loser.entity?.position() ?: return@mapNotNull null
+                baseDrop.drop(evt.winner.entity, ctx.level, pos, evt.winner.effectedPokemon.getOwnerPlayer())
+                return@mapNotNull null
+            }
+
+            baseDrop.buildItem(ctx.level)
+        }
     }
 
-    override val dropTargetTypes: MutableMap<ResourceLocation, (evt: BattleFaintedEvent) -> DropTarget?>
-        get() = TODO("Not yet implemented")
-    override val selectedDropTargetTypes: List<ResourceLocation>
-        get() = TODO("Not yet implemented")
+    override fun cleanup(evt: SingleDefeatEvent) {
+        baseDrops.remove(evt.winner.uuid)
+    }
 }
