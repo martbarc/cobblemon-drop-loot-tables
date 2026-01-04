@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:released",
+  "matcher": [
+    "type=psychic"
+  ],
+  "tables": [
+    "droploottables:released/psychic"
+  ]
+}

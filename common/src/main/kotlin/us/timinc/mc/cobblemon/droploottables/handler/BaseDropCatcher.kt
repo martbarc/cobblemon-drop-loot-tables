@@ -7,13 +7,6 @@ import us.timinc.mc.cobblemon.timcore.AbstractHandler
 
 object BaseDropCatcher : AbstractHandler<LootDroppedEvent>() {
     override fun handle(evt: LootDroppedEvent) {
-        (evt.entity as? PokemonEntity)?.let { pokemonEntity ->
-            pokemonEntity.battle?.let { _ ->
-                DefeatedHandler.baseDrops[pokemonEntity.pokemon.uuid] = evt.drops
-                evt.cancel()
-                return
-            }
-        }
         evt.player?.let { player ->
             player.party()
                 .find { pokemon ->
@@ -25,6 +18,16 @@ object BaseDropCatcher : AbstractHandler<LootDroppedEvent>() {
                     evt.cancel()
                     return
                 }
+        }
+        (evt.entity as? PokemonEntity)?.let { pokemonEntity ->
+            pokemonEntity.battle?.let { _ ->
+                DefeatedHandler.baseDrops[pokemonEntity.pokemon.uuid] = evt.drops
+                evt.cancel()
+                return
+            } ?: run {
+                KilledHandler.baseDrops[pokemonEntity.pokemon.uuid] = evt.drops
+                evt.cancel()
+            }
         }
     }
 }

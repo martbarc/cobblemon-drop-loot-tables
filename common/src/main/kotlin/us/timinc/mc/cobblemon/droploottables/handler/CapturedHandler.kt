@@ -17,7 +17,7 @@ object CapturedHandler : DropHandler<CapturedDropper.Context, CapturedDropper, P
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: PokemonCapturedEvent) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.OWNER_INVENTORY to { evt -> PlayerDropTarget(evt.player) },
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.player) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.pokemon.entity?.let(::PokemonEntityDropTarget) }
         )
 

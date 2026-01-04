@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:killed",
+  "matcher": [
+    "rattata"
+  ],
+  "tables": [
+    "droploottables:killed/rattata"
+  ]
+}

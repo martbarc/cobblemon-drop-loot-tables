@@ -16,9 +16,6 @@ import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
 import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
-/**
- * Fired when a player releases a Pokémon from their PC.
- */
 class ReleasedDropper(
     override val trigger: ResourceLocation,
     override val matcher: List<PokemonMatcher>,
@@ -46,12 +43,16 @@ class ReleasedDropper(
         val player: ServerPlayer,
     ) : DropContext {
         override fun toLootParams(): LootParams {
-            val params = mutableMapOf<LootContextParam<*>, Any>()
-            params[LootContextParams.ORIGIN] = player.position()
-            pokemon.entity?.let { params[LootContextParams.THIS_ENTITY] = it }
-            params[DropLootTables.LootParams.POKEMON_DETAILS] = pokemon
-            params[DropLootTables.LootParams.RELEVANT_PLAYER] = player
-            return LootParams(level, params, mapOf(), player.luck)
+            return LootParams(
+                level,
+                mapOf(
+                    LootContextParams.ORIGIN to player.position(),
+                    DropLootTables.LootParams.POKEMON_DETAILS to pokemon,
+                    DropLootTables.LootParams.RELEVANT_PLAYER to player,
+                ),
+                mapOf(),
+                player.luck
+            )
         }
     }
 }

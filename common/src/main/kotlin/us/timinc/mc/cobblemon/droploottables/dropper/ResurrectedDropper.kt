@@ -16,9 +16,6 @@ import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
 import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
-/**
- * Fired when a Pokémon is resurrected from the revival machine.
- */
 class ResurrectedDropper(
     override val trigger: ResourceLocation,
     override val matcher: List<PokemonMatcher>,
@@ -49,7 +46,6 @@ class ResurrectedDropper(
             val params = mutableMapOf<LootContextParam<*>, Any>()
             val origin = player?.position() ?: pokemon.entity?.position()
             origin?.let { params[LootContextParams.ORIGIN] = it }
-            pokemon.entity?.let { params[LootContextParams.THIS_ENTITY] = it }
             params[DropLootTables.LootParams.POKEMON_DETAILS] = pokemon
             player?.let {
                 params[DropLootTables.LootParams.RELEVANT_PLAYER] = it

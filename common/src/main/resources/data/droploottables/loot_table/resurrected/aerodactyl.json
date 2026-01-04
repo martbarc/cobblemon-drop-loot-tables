@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:generic",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cobblemon:old_amber_fossil"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

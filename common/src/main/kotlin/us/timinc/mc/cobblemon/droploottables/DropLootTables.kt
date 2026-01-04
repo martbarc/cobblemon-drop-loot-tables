@@ -2,6 +2,7 @@ package us.timinc.mc.cobblemon.droploottables
 
 import com.cobblemon.mod.common.api.Priority
 import com.cobblemon.mod.common.api.events.CobblemonEvents
+import com.cobblemon.mod.common.api.events.starter.StarterChosenEvent
 import com.cobblemon.mod.common.api.pokemon.evolution.Evolution
 import com.cobblemon.mod.common.api.reactive.EventObservable
 import com.cobblemon.mod.common.pokeball.PokeBall
@@ -26,11 +27,14 @@ const val MOD_ID: String = "droploottables"
 object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID, DropLootTablesConfig::class.java) {
     class DropLootTablesConfig : AbstractConfig() {
         val tickedDropTargets: List<String> = listOf("pokemon_world_position")
-        val capturedDropTargets: List<String> = listOf("owner_inventory")
-        val hatchedDropTargets: List<String> = listOf("owner_inventory")
-        val evolutionDropTargets: List<String> = listOf("owner_inventory")
-        val victoryDropTargets: List<String> = listOf("owner_inventory")
+        val capturedDropTargets: List<String> = listOf("player_inventory")
+        val hatchedDropTargets: List<String> = listOf("player_inventory")
+        val evolutionDropTargets: List<String> = listOf("player_inventory")
+        val releasedDropTargets: List<String> = listOf("player_inventory")
         val defeatedDropTargets: List<String> = listOf("pokemon_world_position")
+        val killedDropTargets: List<String> = listOf("pokemon_world_position")
+        val resurrectedDropTargets: List<String> = listOf("player_inventory", "pokemon_world_position")
+        val starterChosenDropTargets: List<String> = listOf("player_inventory")
     }
 
     object DataKeys {
@@ -52,7 +56,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         }
 
         object DropTargetTypes {
-            val OWNER_INVENTORY = modResource("owner_inventory")
+            val PLAYER_INVENTORY = modResource("player_inventory")
             val POKEMON_WORLD_POSITION = modResource("pokemon_world_position")
             val POKEMON_HELD_ITEM = modResource("pokemon_held_item")
         }
@@ -68,6 +72,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         val KILLED = register(DataKeys.DropperTypes.KILLED, KilledDropper.DROPPER_TYPE)
         val RELEASED = register(DataKeys.DropperTypes.RELEASED, ReleasedDropper.DROPPER_TYPE)
         val STARTER_CHOSEN = register(DataKeys.DropperTypes.STARTER_CHOSEN, StarterChosenDropper.DROPPER_TYPE)
+        val VICTORY = register(DataKeys.DropperTypes.VICTORY, VictoryDropper.DROPPER_TYPE)
 
         fun <C : DropContext, T : Dropper<C>> register(
             id: ResourceLocation,
@@ -77,9 +82,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
     object LootParams {
         val POKE_BALL: LootContextParam<PokeBall> = LootContextParam(modResource("poke_ball"))
-        val EVOLUTION: LootContextParam<Evolution> = LootContextParam(modResource("evolution"))
         val POKEMON_DETAILS: LootContextParam<Pokemon> = LootContextParam(modResource("pokemon"))
-        val PARTICIPATED_IN_BATTLE: LootContextParam<Boolean> = LootContextParam(modResource("was_in_battle"))
         val RELEVANT_PLAYER: LootContextParam<ServerPlayer> = LootContextParam(modResource("relevant_player"))
     }
 
@@ -103,8 +106,11 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             Events.SINGLE_DEFEAT.post(*(winners.map { winner -> SingleDefeatEvent(winner, loser, evt.battle) }
                 .toTypedArray()))
         }
+        CobblemonEvents.POKEMON_FAINTED.subscribe(Priority.LOWEST, KilledHandler::handle)
         Events.SINGLE_DEFEAT.subscribe(Priority.LOWEST, DefeatedHandler::handle)
         TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
-        CobblemonEvents.EVOLUTION_ACCEPTED.subscribe(Priority.LOWEST, EvolvedHandler::tagPrevious)
+        CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
+        CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
+        CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)
     }
 }

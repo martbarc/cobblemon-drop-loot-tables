@@ -28,7 +28,7 @@ abstract class Dropper<T : DropContext> {
                 PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("anti_matcher", emptyList()).forGetter(getter)
 
             fun <T : Dropper<*>> getTables(getter: (dropper: T) -> List<ResourceLocation>): RecordCodecBuilder<T, List<ResourceLocation>> =
-                ResourceLocation.CODEC.listOf().fieldOf("tables").forGetter(getter)
+                ResourceLocation.CODEC.listOf().optionalFieldOf("tables", emptyList()).forGetter(getter)
         }
     }
 

@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:starter_chosen",
+  "matcher": [
+    "labels=gen1"
+  ],
+  "tables": [
+    "droploottables:starter_chosen/gen1"
+  ]
+}

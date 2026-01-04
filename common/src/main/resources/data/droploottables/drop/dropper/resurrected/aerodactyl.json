@@ -1,0 +1,9 @@
+{
+  "trigger": "droploottables:resurrected",
+  "matcher": [
+    "aerodactyl"
+  ],
+  "tables": [
+    "droploottables:resurrected/aerodactyl"
+  ]
+}

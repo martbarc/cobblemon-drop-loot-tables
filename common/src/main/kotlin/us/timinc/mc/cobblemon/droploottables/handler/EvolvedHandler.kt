@@ -3,6 +3,7 @@ package us.timinc.mc.cobblemon.droploottables.handler
 import com.cobblemon.mod.common.api.drop.DropEntry
 import com.cobblemon.mod.common.api.drop.ItemDropEntry
 import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionAcceptedEvent
+import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionCompleteEvent
 import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionEvent
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
@@ -20,39 +21,41 @@ import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemTarget
 import java.util.*
 
-object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, EvolutionEvent> {
+object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, EvolutionCompleteEvent> {
     val baseDrops: MutableMap<UUID, List<DropEntry>> = mutableMapOf()
-    val previousCache: MutableMap<UUID, Pokemon> = mutableMapOf()
 
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.EVOLVED
 
-    override fun getContext(evt: EvolutionEvent): EvolvedDropper.Context =
+    override fun getContext(evt: EvolutionCompleteEvent): EvolvedDropper.Context =
         EvolvedDropper.Context(
             evt.pokemon,
             getLevel(evt),
             evt.pokemon.getOwnerPlayer()!!,
-            previousCache[evt.pokemon.uuid]!!
+            evt.sourcePokemon
         )
 
-    override fun getLevel(evt: EvolutionEvent): ServerLevel =
+    override fun getLevel(evt: EvolutionCompleteEvent): ServerLevel =
         (evt.pokemon.entity?.level() ?: evt.pokemon.getOwnerPlayer()?.level()) as? ServerLevel
             ?: throw Exception("Could not get the level for an evolution event.")
 
-    override val dropTargetTypes: MutableMap<ResourceLocation, (evt: EvolutionEvent) -> DropTarget?> =
+    override val dropTargetTypes: MutableMap<ResourceLocation, (evt: EvolutionCompleteEvent) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.OWNER_INVENTORY to { evt -> PlayerDropTarget(evt.pokemon.getOwnerPlayer()!!) },
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.pokemon.getOwnerPlayer()!!) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.pokemon.entity?.let(::PokemonEntityDropTarget) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.pokemon) }
         )
 
+    fun registerDropTargetType(id: ResourceLocation, getter: (evt: EvolutionCompleteEvent) -> DropTarget?) {
+        dropTargetTypes[id] = getter
+    }
+
     override val selectedDropTargetTypes: List<ResourceLocation>
         get() = DropLootTables.config.evolutionDropTargets.map { it.asIdentifierDefaultingNamespace(MOD_ID) }
 
-    override fun isRelevantEvent(evt: EvolutionEvent): Boolean =
+    override fun isRelevantEvent(evt: EvolutionCompleteEvent): Boolean =
         evt.pokemon.getOwnerPlayer() != null
-                && previousCache.contains(evt.pokemon.uuid)
 
-    override fun processOtherDrops(evt: EvolutionEvent): List<ItemStack> {
+    override fun processOtherDrops(evt: EvolutionCompleteEvent): List<ItemStack> {
         val ctx = getContext(evt)
         val droppers = getDroppers(ctx) ?: emptyList()
         if (!droppers.any(EvolvedDropper::preserveBaseDrops)) return emptyList()
@@ -70,12 +73,7 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
         }
     }
 
-    override fun cleanup(evt: EvolutionEvent) {
+    override fun cleanup(evt: EvolutionCompleteEvent) {
         baseDrops.remove(evt.pokemon.uuid)
-        previousCache.remove(evt.pokemon.uuid)
-    }
-
-    fun tagPrevious(evt: EvolutionAcceptedEvent) {
-        previousCache[evt.pokemon.uuid] = evt.pokemon.clone()
     }
 }

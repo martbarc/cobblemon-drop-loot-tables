@@ -25,7 +25,7 @@ object DefeatedHandler : DropHandler<DefeatedDropper.Context, DefeatedDropper, S
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: SingleDefeatEvent) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.OWNER_INVENTORY to { evt -> PlayerDropTarget(evt.winner.effectedPokemon.getOwnerPlayer()!!) },
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.winner.effectedPokemon.getOwnerPlayer()!!) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.loser.entity?.let(::PokemonEntityDropTarget) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.winner.effectedPokemon) },
         )
@@ -47,7 +47,10 @@ object DefeatedHandler : DropHandler<DefeatedDropper.Context, DefeatedDropper, S
     override fun getLevel(evt: SingleDefeatEvent): ServerLevel =
         evt.winner.effectedPokemon.getOwnerPlayer()!!.level() as ServerLevel
 
-    override fun isRelevantEvent(evt: SingleDefeatEvent): Boolean = evt.winner.effectedPokemon.getOwnerPlayer() != null
+    override fun isRelevantEvent(evt: SingleDefeatEvent): Boolean =
+        evt.winner.effectedPokemon.getOwnerPlayer() != null
+                && evt.battle.isPvW
+                && evt.winner.effectedPokemon.isPlayerOwned()
 
     override fun processOtherDrops(evt: SingleDefeatEvent): List<ItemStack> {
         val ctx = getContext(evt)
