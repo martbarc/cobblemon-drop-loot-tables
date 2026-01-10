@@ -2,10 +2,7 @@ package us.timinc.mc.cobblemon.droploottables.handler
 
 import com.cobblemon.mod.common.api.drop.DropEntry
 import com.cobblemon.mod.common.api.drop.ItemDropEntry
-import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionAcceptedEvent
 import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionCompleteEvent
-import com.cobblemon.mod.common.api.events.pokemon.evolution.EvolutionEvent
-import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
@@ -14,7 +11,7 @@ import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.MOD_ID
 import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
-import us.timinc.mc.cobblemon.droploottables.api.buildItem
+import us.timinc.mc.cobblemon.droploottables.api.extension.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.EvolvedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
@@ -28,15 +25,14 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
 
     override fun getContext(evt: EvolutionCompleteEvent): EvolvedDropper.Context =
         EvolvedDropper.Context(
+            getLevel(evt)!!,
             evt.pokemon,
-            getLevel(evt),
             evt.pokemon.getOwnerPlayer()!!,
             evt.sourcePokemon
         )
 
-    override fun getLevel(evt: EvolutionCompleteEvent): ServerLevel =
+    override fun getLevel(evt: EvolutionCompleteEvent): ServerLevel? =
         (evt.pokemon.entity?.level() ?: evt.pokemon.getOwnerPlayer()?.level()) as? ServerLevel
-            ?: throw Exception("Could not get the level for an evolution event.")
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: EvolutionCompleteEvent) -> DropTarget?> =
         mutableMapOf(
@@ -53,7 +49,8 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
         get() = DropLootTables.config.evolutionDropTargets.map { it.asIdentifierDefaultingNamespace(MOD_ID) }
 
     override fun isRelevantEvent(evt: EvolutionCompleteEvent): Boolean =
-        evt.pokemon.getOwnerPlayer() != null
+        super.isRelevantEvent(evt)
+                && evt.pokemon.getOwnerPlayer() != null
 
     override fun processOtherDrops(evt: EvolutionCompleteEvent): List<ItemStack> {
         val ctx = getContext(evt)

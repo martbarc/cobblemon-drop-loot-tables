@@ -9,35 +9,27 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
-import us.timinc.mc.cobblemon.timcore.LimitedList
-import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
 class EvolvedDropper(
     override val trigger: ResourceLocation,
-    override val matcher: List<PokemonMatcher>,
-    override val antiMatcher: List<PokemonMatcher>,
     override val lootTables: List<ResourceLocation>,
-    val prevMatcher: List<PokemonMatcher> = emptyList(),
-    val prevAntiMatcher: List<PokemonMatcher> = emptyList(),
+    override val conditions: List<LootItemCondition>,
     val preserveBaseDrops: Boolean = false,
 ) : Dropper<EvolvedDropper.Context>() {
     companion object {
         val CODEC: MapCodec<EvolvedDropper> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 CodecPieces.getTrigger(EvolvedDropper::trigger),
-                CodecPieces.getMatcher(EvolvedDropper::matcher),
-                CodecPieces.getAntiMatcher(EvolvedDropper::antiMatcher),
                 CodecPieces.getTables(EvolvedDropper::lootTables),
-                PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("prevMatcher", emptyList())
-                    .forGetter(EvolvedDropper::prevMatcher),
-                PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("prevAntiMatcher", emptyList())
-                    .forGetter(EvolvedDropper::prevAntiMatcher),
-                Codec.BOOL.optionalFieldOf("preserveBaseDrops", false).forGetter(EvolvedDropper::preserveBaseDrops),
+                CodecPieces.getConditions(EvolvedDropper::conditions),
+                Codec.BOOL.optionalFieldOf("preserveBaseDrops", false)
+                    .forGetter(EvolvedDropper::preserveBaseDrops),
             ).apply(instance, ::EvolvedDropper)
         }
 
@@ -47,29 +39,22 @@ class EvolvedDropper(
     override fun getType(): DropperType<*, *> = DropLootTables.DropperTypes.EVOLVED
 
     class Context(
-        override val pokemon: Pokemon,
         override val level: ServerLevel,
-        val player: ServerPlayer,
-        val previous: Pokemon,
+        val focusPokemon: Pokemon,
+        val focusPlayer: ServerPlayer,
+        val previousPokemon: Pokemon,
     ) : DropContext {
         override fun toLootParams(): LootParams = LootParams(
             level,
             mapOf(
-                LootContextParams.ORIGIN to player.position(),
-                LootContextParams.THIS_ENTITY to pokemon.entity,
-                DropLootTables.LootParams.POKEMON_DETAILS to pokemon,
-                DropLootTables.LootParams.RELEVANT_PLAYER to player,
+                LootContextParams.ORIGIN to focusPlayer.position(),
+                LootContextParams.THIS_ENTITY to focusPokemon.entity,
+                DropLootTables.LootParams.FOCUS_POKEMON to focusPokemon,
+                DropLootTables.LootParams.FOCUS_PLAYER to focusPlayer,
+                DropLootTables.LootParams.PREVIOUS_POKEMON to previousPokemon,
             ),
             mapOf(),
-            player.luck
+            focusPlayer.luck
         )
     }
-
-    override fun canDrop(context: Context): Boolean =
-        super.canDrop(context)
-                && LimitedList.PokemonMatcherList.matchesList(
-            context.previous,
-            prevMatcher.toSet(),
-            prevAntiMatcher.toSet()
-        )
 }

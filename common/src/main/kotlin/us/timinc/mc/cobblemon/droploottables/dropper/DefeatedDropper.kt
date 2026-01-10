@@ -6,38 +6,29 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
-import us.timinc.mc.cobblemon.timcore.LimitedList
-import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
 class DefeatedDropper(
     override val trigger: ResourceLocation,
-    override val matcher: List<PokemonMatcher>,
-    override val antiMatcher: List<PokemonMatcher>,
     override val lootTables: List<ResourceLocation>,
-    val byMatcher: List<PokemonMatcher> = emptyList(),
-    val byAntiMatcher: List<PokemonMatcher> = emptyList(),
+    override val conditions: List<LootItemCondition>,
     val preserveBaseDrops: Boolean = false,
 ) : Dropper<DefeatedDropper.Context>() {
     companion object {
         val CODEC: MapCodec<DefeatedDropper> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 CodecPieces.getTrigger(DefeatedDropper::trigger),
-                CodecPieces.getMatcher(DefeatedDropper::matcher),
-                CodecPieces.getAntiMatcher(DefeatedDropper::antiMatcher),
                 CodecPieces.getTables(DefeatedDropper::lootTables),
-                PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("byMatcher", emptyList())
-                    .forGetter(DefeatedDropper::byMatcher),
-                PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("byAntiMatcher", emptyList())
-                    .forGetter(DefeatedDropper::byAntiMatcher),
-                Codec.BOOL.optionalFieldOf("preserveBaseDrops", false).forGetter(DefeatedDropper::preserveBaseDrops)
+                CodecPieces.getConditions(DefeatedDropper::conditions),
+                Codec.BOOL.optionalFieldOf("preserveBaseDrops", false)
+                    .forGetter(DefeatedDropper::preserveBaseDrops)
             ).apply(instance, ::DefeatedDropper)
         }
 
@@ -47,23 +38,20 @@ class DefeatedDropper(
     override fun getType(): DropperType<*, *> = DropLootTables.DropperTypes.DEFEATED
 
     class Context(
-        override val pokemon: Pokemon,
         override val level: ServerLevel,
-        val player: ServerPlayer,
-        val defeatedBy: Pokemon,
+        val focusPokemon: Pokemon,
+        val actingPokemon: Pokemon,
     ) : DropContext {
         override fun toLootParams(): LootParams = LootParams(
-            level, mapOf(
-                LootContextParams.ORIGIN to player.position(),
-                LootContextParams.THIS_ENTITY to pokemon.entity,
-                DropLootTables.LootParams.POKEMON_DETAILS to pokemon,
-                DropLootTables.LootParams.RELEVANT_PLAYER to player
-            ), mapOf(), player.luck
+            level,
+            mapOf(
+                LootContextParams.ORIGIN to focusPokemon.entity!!.position(),
+                LootContextParams.THIS_ENTITY to focusPokemon.entity,
+                DropLootTables.LootParams.FOCUS_POKEMON to focusPokemon,
+                DropLootTables.LootParams.ACTING_POKEMON to actingPokemon,
+            ),
+            mapOf(),
+            focusPokemon.getOwnerPlayer()?.luck ?: 0F
         )
     }
-
-    override fun canDrop(context: Context): Boolean =
-        super.canDrop(context) && (LimitedList.PokemonMatcherList.matchesList(
-            context.defeatedBy, byMatcher.toSet(), byAntiMatcher.toSet()
-        ))
 }

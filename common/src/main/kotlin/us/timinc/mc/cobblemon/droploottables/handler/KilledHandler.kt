@@ -14,7 +14,7 @@ import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.MOD_ID
 import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
-import us.timinc.mc.cobblemon.droploottables.api.buildItem
+import us.timinc.mc.cobblemon.droploottables.api.extension.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.KilledDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget

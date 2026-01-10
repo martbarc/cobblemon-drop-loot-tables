@@ -9,26 +9,24 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
-import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
 class ResurrectedDropper(
     override val trigger: ResourceLocation,
-    override val matcher: List<PokemonMatcher>,
-    override val antiMatcher: List<PokemonMatcher>,
     override val lootTables: List<ResourceLocation>,
+    override val conditions: List<LootItemCondition>,
 ) : Dropper<ResurrectedDropper.Context>() {
     companion object {
         val CODEC: MapCodec<ResurrectedDropper> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 CodecPieces.getTrigger(ResurrectedDropper::trigger),
-                CodecPieces.getMatcher(ResurrectedDropper::matcher),
-                CodecPieces.getAntiMatcher(ResurrectedDropper::antiMatcher),
                 CodecPieces.getTables(ResurrectedDropper::lootTables),
+                CodecPieces.getConditions(ResurrectedDropper::conditions),
             ).apply(instance, ::ResurrectedDropper)
         }
 
@@ -39,18 +37,19 @@ class ResurrectedDropper(
 
     class Context(
         override val level: ServerLevel,
-        override val pokemon: Pokemon,
-        val player: ServerPlayer?,
+        val focusPokemon: Pokemon,
+        val focusPlayer: ServerPlayer?,
     ) : DropContext {
         override fun toLootParams(): LootParams {
-            val params = mutableMapOf<LootContextParam<*>, Any>()
-            val origin = player?.position() ?: pokemon.entity?.position()
+            val params = mutableMapOf<LootContextParam<*>, Any>(
+                DropLootTables.LootParams.FOCUS_POKEMON to focusPokemon
+            )
+            val origin = focusPokemon.entity?.position() ?: focusPlayer?.position()
             origin?.let { params[LootContextParams.ORIGIN] = it }
-            params[DropLootTables.LootParams.POKEMON_DETAILS] = pokemon
-            player?.let {
-                params[DropLootTables.LootParams.RELEVANT_PLAYER] = it
+            focusPlayer?.let {
+                params[DropLootTables.LootParams.FOCUS_PLAYER] = it
             }
-            return LootParams(level, params, mapOf(), player?.luck ?: 0F)
+            return LootParams(level, params, mapOf(), focusPlayer?.luck ?: 0F)
         }
     }
 }

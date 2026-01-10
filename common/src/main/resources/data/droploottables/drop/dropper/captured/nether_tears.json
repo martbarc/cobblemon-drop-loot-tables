@@ -1,9 +1,18 @@
 {
   "trigger": "droploottables:captured",
-  "matcher": [
-    "type=ghost"
-  ],
   "tables": [
     "droploottables:captured/nether_tears"
+  ],
+  "conditions": [
+    {
+      "type": "droploottables:pokemon_matcher",
+      "matcher": [
+        "type=ghost"
+      ]
+    },
+    {
+      "type": "droploottables:pokeball",
+      "pokeball": "cobblemon:dusk_ball"
+    }
   ]
 }

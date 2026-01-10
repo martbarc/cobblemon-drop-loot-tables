@@ -2,8 +2,6 @@ package us.timinc.mc.cobblemon.droploottables
 
 import com.cobblemon.mod.common.api.Priority
 import com.cobblemon.mod.common.api.events.CobblemonEvents
-import com.cobblemon.mod.common.api.events.starter.StarterChosenEvent
-import com.cobblemon.mod.common.api.pokemon.evolution.Evolution
 import com.cobblemon.mod.common.api.reactive.EventObservable
 import com.cobblemon.mod.common.pokeball.PokeBall
 import com.cobblemon.mod.common.pokemon.Pokemon
@@ -14,13 +12,15 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
+import us.timinc.mc.cobblemon.droploottables.api.condition.DropCondition
+import us.timinc.mc.cobblemon.droploottables.api.condition.DropConditionType
+import us.timinc.mc.cobblemon.droploottables.condition.PokemonMatcherCondition
 import us.timinc.mc.cobblemon.droploottables.data.DropperDataManager
 import us.timinc.mc.cobblemon.droploottables.dropper.*
 import us.timinc.mc.cobblemon.droploottables.event.SingleDefeatEvent
 import us.timinc.mc.cobblemon.droploottables.handler.*
 import us.timinc.mc.cobblemon.timcore.AbstractConfig
 import us.timinc.mc.cobblemon.timcore.AbstractMod
-import us.timinc.mc.cobblemon.timcore.TimCoreEvents
 
 const val MOD_ID: String = "droploottables"
 
@@ -60,6 +60,19 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             val POKEMON_WORLD_POSITION = modResource("pokemon_world_position")
             val POKEMON_HELD_ITEM = modResource("pokemon_held_item")
         }
+
+        object DropConditionKeys {
+            val POKEMON_MATCHER = modResource("pokemon_matcher")
+            val POKEBALL = modResource("pokeball")
+        }
+
+        object LootParamKeys {
+            val FOCUS_POKEMON = modResource("focus_pokemon")
+            val FOCUS_PLAYER = modResource("focus_player")
+            val FOCUS_POKEBALL = modResource("focus_pokeball")
+            val ACTING_POKEMON = modResource("acting_pokemon")
+            val PREVIOUS_POKEMON = modResource("previous_pokemon")
+        }
     }
 
     object DropperTypes {
@@ -81,9 +94,31 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
     }
 
     object LootParams {
-        val POKE_BALL: LootContextParam<PokeBall> = LootContextParam(modResource("poke_ball"))
-        val POKEMON_DETAILS: LootContextParam<Pokemon> = LootContextParam(modResource("pokemon"))
-        val RELEVANT_PLAYER: LootContextParam<ServerPlayer> = LootContextParam(modResource("relevant_player"))
+        val params: MutableMap<ResourceLocation, LootContextParam<*>> = mutableMapOf()
+
+        val FOCUS_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.FOCUS_POKEMON)
+        val FOCUS_PLAYER: LootContextParam<ServerPlayer> = register(DataKeys.LootParamKeys.FOCUS_PLAYER)
+        val FOCUS_POKEBALL: LootContextParam<PokeBall> = register(DataKeys.LootParamKeys.FOCUS_POKEBALL)
+        val ACTING_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.ACTING_POKEMON)
+        val PREVIOUS_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.PREVIOUS_POKEMON)
+
+        fun <T> register(resourceLocation: ResourceLocation): LootContextParam<T> {
+            val lcp = LootContextParam<T>(resourceLocation)
+            params[resourceLocation] = lcp
+            return lcp
+        }
+    }
+
+    object ConditionTypes {
+        val POKEMON_MATCHER =
+            register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CONDITION_TYPE)
+
+        fun <C, T : DropCondition<C>> register(
+            id: ResourceLocation,
+            conditionType: DropConditionType<C, T>,
+        ): DropConditionType<C, T> {
+            return Registry.register(DropConditionType.REGISTRY, id, conditionType)
+        }
     }
 
     object Events {
@@ -92,6 +127,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
     init {
         DropperTypes
+        ConditionTypes
 
         registerReloadListener(DropperDataManager)
 
@@ -108,7 +144,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         }
         CobblemonEvents.POKEMON_FAINTED.subscribe(Priority.LOWEST, KilledHandler::handle)
         Events.SINGLE_DEFEAT.subscribe(Priority.LOWEST, DefeatedHandler::handle)
-        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
+//        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
         CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
         CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
         CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)

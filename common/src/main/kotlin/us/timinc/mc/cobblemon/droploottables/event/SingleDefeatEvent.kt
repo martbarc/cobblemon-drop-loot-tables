@@ -6,5 +6,5 @@ import com.cobblemon.mod.common.battles.pokemon.BattlePokemon
 class SingleDefeatEvent(
     val winner: BattlePokemon,
     val loser: BattlePokemon,
-    val battle: PokemonBattle
+    val battle: PokemonBattle,
 )

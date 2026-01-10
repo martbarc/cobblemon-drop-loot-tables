@@ -29,8 +29,8 @@ object CapturedHandler : DropHandler<CapturedDropper.Context, CapturedDropper, P
     }
 
     override fun getContext(evt: PokemonCapturedEvent): CapturedDropper.Context = CapturedDropper.Context(
-        evt.pokemon,
         evt.player.level() as ServerLevel,
+        evt.pokemon,
         evt.player,
         evt.pokeBallEntity.pokeBall
     )

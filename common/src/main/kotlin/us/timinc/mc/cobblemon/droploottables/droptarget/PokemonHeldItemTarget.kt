@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 
 class PokemonHeldItemTarget(
-    val pokemon: Pokemon
+    val pokemon: Pokemon,
 ) : DropTarget {
     override fun dropTo(stack: ItemStack) {
         if (!pokemon.heldItem().isEmpty) return

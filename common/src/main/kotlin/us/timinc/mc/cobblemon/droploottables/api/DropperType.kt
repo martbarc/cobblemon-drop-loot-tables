@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceKey
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
 
 data class DropperType<C : DropContext, T : Dropper<C>>(
-    val codec: MapCodec<T>
+    val codec: MapCodec<T>,
 ) {
     companion object {
         val REGISTRY: Registry<DropperType<*, *>> = MappedRegistry(

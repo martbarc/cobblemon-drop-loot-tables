@@ -1,4 +1,4 @@
-package us.timinc.mc.cobblemon.droploottables.api
+package us.timinc.mc.cobblemon.droploottables.api.extension
 
 import com.cobblemon.mod.common.api.drop.ItemDropEntry
 import net.minecraft.core.component.DataComponentPatch
