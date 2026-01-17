@@ -1,0 +1,23 @@
+{
+  "trigger": "droploottables:defeated",
+  "conditions": [
+    {
+      "condition": "droploottables:pokemon_matcher",
+      "matcher": [
+        "kingambit"
+      ]
+    },
+    {
+      "condition": "droploottables:pokemon_matcher",
+      "targetPokemon": "droploottables:acting_pokemon",
+      "matcher": [
+        "pawniard",
+        "bisharp"
+      ]
+    }
+  ],
+  "tables": [
+    "droploottables:defeated/leader"
+  ],
+  "preserveBaseDrops": true
+}

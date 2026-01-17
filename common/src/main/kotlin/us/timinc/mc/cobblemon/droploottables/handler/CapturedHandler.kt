@@ -24,6 +24,7 @@ object CapturedHandler : DropHandler<CapturedDropper.Context, CapturedDropper, P
     override val selectedDropTargetTypes: List<ResourceLocation>
         get() = DropLootTables.config.capturedDropTargets.map { it.asIdentifierDefaultingNamespace(MOD_ID) }
 
+    @Suppress("unused")
     fun registerDropTargetType(id: ResourceLocation, getter: (evt: PokemonCapturedEvent) -> DropTarget?) {
         dropTargetTypes[id] = getter
     }

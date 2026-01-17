@@ -1,37 +1,40 @@
 package us.timinc.mc.cobblemon.droploottables.condition
 
-import com.cobblemon.mod.common.pokemon.Pokemon
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
-import us.timinc.mc.cobblemon.droploottables.api.condition.DropConditionType
+import us.timinc.mc.cobblemon.droploottables.api.condition.PokemonParamExtractor
 import us.timinc.mc.cobblemon.timcore.LimitedList
 import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
 class PokemonMatcherCondition(
-    val target: ResourceLocation = DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON,
-    val matcher: List<PokemonMatcher>,
-    val antiMatcher: List<PokemonMatcher>,
+    val targetPokemon: ResourceLocation = DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON,
+    val matcher: Set<PokemonMatcher>,
+    val antiMatcher: Set<PokemonMatcher>,
 ) : LootItemCondition {
     companion object {
         val CODEC: MapCodec<PokemonMatcherCondition> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
-                ResourceLocation.CODEC.optionalFieldOf("target", DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON)
-                    .forGetter(PokemonMatcherCondition::target),
+                ResourceLocation.CODEC.optionalFieldOf("targetPokemon", DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON)
+                    .forGetter(PokemonMatcherCondition::targetPokemon),
                 PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("matcher", emptyList())
-                    .forGetter(PokemonMatcherCondition::matcher),
+                    .forGetter { it.matcher.toList() },
                 PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("antiMatcher", emptyList())
-                    .forGetter(PokemonMatcherCondition::antiMatcher),
-            ).apply(instance, ::PokemonMatcherCondition)
+                    .forGetter { it.antiMatcher.toList() },
+            ).apply(instance) { target, matcher, antiMatcher ->
+                PokemonMatcherCondition(target, matcher.toSet(), antiMatcher.toSet())
+            }
         }
-
-        val CONDITION_TYPE = DropConditionType(CODEC)
     }
 
-    override fun getType(): DropConditionType<*, *> = DropLootTables.ConditionTypes.POKEMON_MATCHER
+    override fun getType(): LootItemConditionType = DropLootTables.LootItemConditionTypes.POKEMON_MATCHER_CONDITION
 
-    fun matches(ctx: Pokemon): Boolean =
-        LimitedList.PokemonMatcherList.matchesList(ctx, matcher.toSet(), antiMatcher.toSet())
+    override fun test(ctx: LootContext): Boolean {
+        val pokemon = PokemonParamExtractor.getFrom(ctx, targetPokemon) ?: return false
+        return LimitedList.PokemonMatcherList.matchesList(pokemon, matcher, antiMatcher)
+    }
 }

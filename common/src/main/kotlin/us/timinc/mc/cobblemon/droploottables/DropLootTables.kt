@@ -5,22 +5,45 @@ import com.cobblemon.mod.common.api.events.CobblemonEvents
 import com.cobblemon.mod.common.api.reactive.EventObservable
 import com.cobblemon.mod.common.pokeball.PokeBall
 import com.cobblemon.mod.common.pokemon.Pokemon
+import com.mojang.serialization.MapCodec
 import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
-import us.timinc.mc.cobblemon.droploottables.api.condition.DropCondition
-import us.timinc.mc.cobblemon.droploottables.api.condition.DropConditionType
+import us.timinc.mc.cobblemon.droploottables.condition.CaughtBallCondition
+import us.timinc.mc.cobblemon.droploottables.condition.KnowledgeLevelCondition
 import us.timinc.mc.cobblemon.droploottables.condition.PokemonMatcherCondition
 import us.timinc.mc.cobblemon.droploottables.data.DropperDataManager
-import us.timinc.mc.cobblemon.droploottables.dropper.*
+import us.timinc.mc.cobblemon.droploottables.dropper.CapturedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.DefeatedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.EvolvedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.HatchedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.KilledDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.ReleasedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.ResurrectedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.StarterChosenDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.TickedDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.VictoryDropper
 import us.timinc.mc.cobblemon.droploottables.event.SingleDefeatEvent
-import us.timinc.mc.cobblemon.droploottables.handler.*
+import us.timinc.mc.cobblemon.droploottables.handler.BaseDropCatcher
+import us.timinc.mc.cobblemon.droploottables.handler.CapturedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.DefeatedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.EvolvedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.HatchedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.KilledHandler
+import us.timinc.mc.cobblemon.droploottables.handler.ReleasedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.ResurrectedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.StarterChosenHandler
+import us.timinc.mc.cobblemon.droploottables.handler.TickedHandler
 import us.timinc.mc.cobblemon.timcore.AbstractConfig
 import us.timinc.mc.cobblemon.timcore.AbstractMod
+import us.timinc.mc.cobblemon.timcore.TimCoreEvents
 
 const val MOD_ID: String = "droploottables"
 
@@ -63,7 +86,8 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
         object DropConditionKeys {
             val POKEMON_MATCHER = modResource("pokemon_matcher")
-            val POKEBALL = modResource("pokeball")
+            val CAUGHT_BALL = modResource("caught_ball")
+            val KNOWLEDGE_LEVEL = modResource("knowledge_level")
         }
 
         object LootParamKeys {
@@ -109,15 +133,15 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         }
     }
 
-    object ConditionTypes {
-        val POKEMON_MATCHER =
-            register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CONDITION_TYPE)
+    object LootItemConditionTypes {
+        val POKEMON_MATCHER_CONDITION =
+            register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CODEC)
+        val CAUGHT_BALL_CONDITION = register(DataKeys.DropConditionKeys.CAUGHT_BALL, CaughtBallCondition.CODEC)
+        val KNOWLEDGE_LEVEL_CONDITION =
+            register(DataKeys.DropConditionKeys.KNOWLEDGE_LEVEL, KnowledgeLevelCondition.CODEC)
 
-        fun <C, T : DropCondition<C>> register(
-            id: ResourceLocation,
-            conditionType: DropConditionType<C, T>,
-        ): DropConditionType<C, T> {
-            return Registry.register(DropConditionType.REGISTRY, id, conditionType)
+        fun <T : LootItemCondition> register(id: ResourceLocation, codec: MapCodec<T>): LootItemConditionType {
+            return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, id, LootItemConditionType(codec))
         }
     }
 
@@ -127,7 +151,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
     init {
         DropperTypes
-        ConditionTypes
+        LootItemConditionTypes
 
         registerReloadListener(DropperDataManager)
 
@@ -144,7 +168,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         }
         CobblemonEvents.POKEMON_FAINTED.subscribe(Priority.LOWEST, KilledHandler::handle)
         Events.SINGLE_DEFEAT.subscribe(Priority.LOWEST, DefeatedHandler::handle)
-//        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
+        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
         CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
         CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
         CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)
