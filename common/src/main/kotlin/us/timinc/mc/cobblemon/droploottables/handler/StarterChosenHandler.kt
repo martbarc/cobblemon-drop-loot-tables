@@ -10,7 +10,7 @@ import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.dropper.StarterChosenDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
-import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
 
 object StarterChosenHandler : DropHandler<StarterChosenDropper.Context, StarterChosenDropper, StarterChosenEvent> {
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.STARTER_CHOSEN
@@ -26,7 +26,7 @@ object StarterChosenHandler : DropHandler<StarterChosenDropper.Context, StarterC
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: StarterChosenEvent) -> DropTarget?> =
         mutableMapOf(
             DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.player) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.pokemon) }
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemDropTarget(evt.pokemon) }
         )
 
     fun registerDropTargetType(id: ResourceLocation, getter: (evt: StarterChosenEvent) -> DropTarget?) {

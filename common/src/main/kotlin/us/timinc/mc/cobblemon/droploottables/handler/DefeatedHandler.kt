@@ -14,7 +14,7 @@ import us.timinc.mc.cobblemon.droploottables.api.extension.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.DefeatedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
-import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
 import us.timinc.mc.cobblemon.droploottables.event.SingleDefeatEvent
 import java.util.*
 
@@ -27,7 +27,7 @@ object DefeatedHandler : DropHandler<DefeatedDropper.Context, DefeatedDropper, S
         mutableMapOf(
             DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.winner.effectedPokemon.getOwnerPlayer()!!) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.loser.entity?.let(::PokemonEntityDropTarget) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.winner.effectedPokemon) },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemDropTarget(evt.winner.effectedPokemon) },
         )
 
     override val selectedDropTargetTypes: List<ResourceLocation>

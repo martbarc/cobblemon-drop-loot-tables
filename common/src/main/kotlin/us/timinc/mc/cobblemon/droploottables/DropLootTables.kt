@@ -25,6 +25,7 @@ import us.timinc.mc.cobblemon.droploottables.dropper.DefeatedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.EvolvedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.HatchedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.KilledDropper
+import us.timinc.mc.cobblemon.droploottables.dropper.LevelUpDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.ReleasedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.ResurrectedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.StarterChosenDropper
@@ -37,6 +38,7 @@ import us.timinc.mc.cobblemon.droploottables.handler.DefeatedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.EvolvedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.HatchedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.KilledHandler
+import us.timinc.mc.cobblemon.droploottables.handler.LevelUpHandler
 import us.timinc.mc.cobblemon.droploottables.handler.ReleasedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.ResurrectedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.StarterChosenHandler
@@ -58,6 +60,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         val killedDropTargets: List<String> = listOf("pokemon_world_position")
         val resurrectedDropTargets: List<String> = listOf("player_inventory", "pokemon_world_position")
         val starterChosenDropTargets: List<String> = listOf("player_inventory")
+        val levelUpDropTargets: List<String> = listOf("player_inventory")
     }
 
     object DataKeys {
@@ -76,6 +79,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             val STARTER_CHOSEN = modResource("starter_chosen")
             val TICKED = modResource("ticked")
             val VICTORY = modResource("victory")
+            val LEVEL_UP = modResource("level_up")
         }
 
         object DropTargetTypes {
@@ -101,6 +105,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
     object DropperTypes {
         val CAPTURED = register(DataKeys.DropperTypes.CAPTURED, CapturedDropper.DROPPER_TYPE)
+        val LEVEL_UP = register(DataKeys.DropperTypes.LEVEL_UP, LevelUpDropper.DROPPER_TYPE)
         val TICKED = register(DataKeys.DropperTypes.TICKED, TickedDropper.DROPPER_TYPE)
         val DEFEATED = register(DataKeys.DropperTypes.DEFEATED, DefeatedDropper.DROPPER_TYPE)
         val HATCHED = register(DataKeys.DropperTypes.HATCHED, HatchedDropper.DROPPER_TYPE)
@@ -172,5 +177,9 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
         CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
         CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)
+        CobblemonEvents.LEVEL_UP_EVENT.subscribe{
+            println("WTF")
+            LevelUpHandler.handle(it)
+        }
     }
 }

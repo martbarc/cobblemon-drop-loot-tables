@@ -15,7 +15,7 @@ import us.timinc.mc.cobblemon.droploottables.api.extension.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.EvolvedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
-import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
 import java.util.*
 
 object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, EvolutionCompleteEvent> {
@@ -38,7 +38,7 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
         mutableMapOf(
             DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.pokemon.getOwnerPlayer()!!) },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.pokemon.entity?.let(::PokemonEntityDropTarget) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemTarget(evt.pokemon) }
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemDropTarget(evt.pokemon) }
         )
 
     fun registerDropTargetType(id: ResourceLocation, getter: (evt: EvolutionCompleteEvent) -> DropTarget?) {

@@ -79,8 +79,10 @@ object KilledHandler : DropHandler<KilledDropper.Context, KilledDropper, Pokemon
     }
 
     override fun handle(evt: PokemonFaintedEvent) {
-        afterOnServer(1, getLevel(evt)!!) {
-            super.handle(evt)
+        getLevel(evt)?.let { level ->
+            afterOnServer(1, level) {
+                super.handle(evt)
+            }
         }
     }
 }
