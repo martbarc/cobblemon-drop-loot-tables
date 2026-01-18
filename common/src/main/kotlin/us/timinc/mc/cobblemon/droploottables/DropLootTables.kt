@@ -177,9 +177,6 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
         CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
         CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)
-        CobblemonEvents.LEVEL_UP_EVENT.subscribe{
-            println("WTF")
-            LevelUpHandler.handle(it)
-        }
+        CobblemonEvents.LEVEL_UP_EVENT.subscribe(Priority.LOWEST, LevelUpHandler::handle)
     }
 }

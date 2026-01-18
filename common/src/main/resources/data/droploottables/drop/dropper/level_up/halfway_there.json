@@ -1,6 +1,8 @@
 {
   "trigger": "droploottables:level_up",
-  "tables": ["droploottables:level_up/halfway_there"],
+  "tables": [
+    "droploottables:level_up/halfway_there"
+  ],
   "conditions": [],
   "level": 50
 }

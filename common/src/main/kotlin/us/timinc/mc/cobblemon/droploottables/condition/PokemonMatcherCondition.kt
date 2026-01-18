@@ -19,7 +19,10 @@ class PokemonMatcherCondition(
     companion object {
         val CODEC: MapCodec<PokemonMatcherCondition> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
-                ResourceLocation.CODEC.optionalFieldOf("targetPokemon", DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON)
+                ResourceLocation.CODEC.optionalFieldOf(
+                    "targetPokemon",
+                    DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON
+                )
                     .forGetter(PokemonMatcherCondition::targetPokemon),
                 PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("matcher", emptyList())
                     .forGetter { it.matcher.toList() },
