@@ -51,16 +51,16 @@ const val MOD_ID: String = "droploottables"
 
 object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID, DropLootTablesConfig::class.java) {
     class DropLootTablesConfig : AbstractConfig() {
-        val tickedDropTargets: List<String> = listOf("pokemon_world_position")
         val capturedDropTargets: List<String> = listOf("player_inventory")
-        val hatchedDropTargets: List<String> = listOf("player_inventory")
-        val evolutionDropTargets: List<String> = listOf("player_inventory")
-        val releasedDropTargets: List<String> = listOf("player_inventory")
         val defeatedDropTargets: List<String> = listOf("pokemon_world_position")
+        val evolutionDropTargets: List<String> = listOf("player_inventory")
+        val hatchedDropTargets: List<String> = listOf("player_inventory")
         val killedDropTargets: List<String> = listOf("pokemon_world_position")
+        val levelUpDropTargets: List<String> = listOf("player_inventory")
+        val releasedDropTargets: List<String> = listOf("player_inventory")
         val resurrectedDropTargets: List<String> = listOf("player_inventory", "pokemon_world_position")
         val starterChosenDropTargets: List<String> = listOf("player_inventory")
-        val levelUpDropTargets: List<String> = listOf("player_inventory")
+        val tickedDropTargets: List<String> = listOf("pokemon_world_position")
     }
 
     object DataKeys {
@@ -74,46 +74,46 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             val EVOLVED = modResource("evolved")
             val HATCHED = modResource("hatched")
             val KILLED = modResource("killed")
+            val LEVEL_UP = modResource("level_up")
             val RELEASED = modResource("released")
             val RESURRECTED = modResource("resurrected")
             val STARTER_CHOSEN = modResource("starter_chosen")
             val TICKED = modResource("ticked")
             val VICTORY = modResource("victory")
-            val LEVEL_UP = modResource("level_up")
         }
 
         object DropTargetTypes {
             val PLAYER_INVENTORY = modResource("player_inventory")
-            val POKEMON_WORLD_POSITION = modResource("pokemon_world_position")
             val POKEMON_HELD_ITEM = modResource("pokemon_held_item")
+            val POKEMON_WORLD_POSITION = modResource("pokemon_world_position")
         }
 
         object DropConditionKeys {
-            val POKEMON_MATCHER = modResource("pokemon_matcher")
             val CAUGHT_BALL = modResource("caught_ball")
+            val POKEMON_MATCHER = modResource("pokemon_matcher")
             val KNOWLEDGE_LEVEL = modResource("knowledge_level")
         }
 
         object LootParamKeys {
-            val FOCUS_POKEMON = modResource("focus_pokemon")
+            val ACTING_POKEMON = modResource("acting_pokemon")
             val FOCUS_PLAYER = modResource("focus_player")
             val FOCUS_POKEBALL = modResource("focus_pokeball")
-            val ACTING_POKEMON = modResource("acting_pokemon")
+            val FOCUS_POKEMON = modResource("focus_pokemon")
             val PREVIOUS_POKEMON = modResource("previous_pokemon")
         }
     }
 
     object DropperTypes {
         val CAPTURED = register(DataKeys.DropperTypes.CAPTURED, CapturedDropper.DROPPER_TYPE)
-        val LEVEL_UP = register(DataKeys.DropperTypes.LEVEL_UP, LevelUpDropper.DROPPER_TYPE)
-        val TICKED = register(DataKeys.DropperTypes.TICKED, TickedDropper.DROPPER_TYPE)
         val DEFEATED = register(DataKeys.DropperTypes.DEFEATED, DefeatedDropper.DROPPER_TYPE)
-        val HATCHED = register(DataKeys.DropperTypes.HATCHED, HatchedDropper.DROPPER_TYPE)
         val EVOLVED = register(DataKeys.DropperTypes.EVOLVED, EvolvedDropper.DROPPER_TYPE)
-        val RESURRECTED = register(DataKeys.DropperTypes.RESURRECTED, ResurrectedDropper.DROPPER_TYPE)
+        val HATCHED = register(DataKeys.DropperTypes.HATCHED, HatchedDropper.DROPPER_TYPE)
         val KILLED = register(DataKeys.DropperTypes.KILLED, KilledDropper.DROPPER_TYPE)
+        val LEVEL_UP = register(DataKeys.DropperTypes.LEVEL_UP, LevelUpDropper.DROPPER_TYPE)
         val RELEASED = register(DataKeys.DropperTypes.RELEASED, ReleasedDropper.DROPPER_TYPE)
+        val RESURRECTED = register(DataKeys.DropperTypes.RESURRECTED, ResurrectedDropper.DROPPER_TYPE)
         val STARTER_CHOSEN = register(DataKeys.DropperTypes.STARTER_CHOSEN, StarterChosenDropper.DROPPER_TYPE)
+        val TICKED = register(DataKeys.DropperTypes.TICKED, TickedDropper.DROPPER_TYPE)
         val VICTORY = register(DataKeys.DropperTypes.VICTORY, VictoryDropper.DROPPER_TYPE)
 
         fun <C : DropContext, T : Dropper<C>> register(
@@ -125,10 +125,10 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
     object LootParams {
         val params: MutableMap<ResourceLocation, LootContextParam<*>> = mutableMapOf()
 
-        val FOCUS_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.FOCUS_POKEMON)
+        val ACTING_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.ACTING_POKEMON)
         val FOCUS_PLAYER: LootContextParam<ServerPlayer> = register(DataKeys.LootParamKeys.FOCUS_PLAYER)
         val FOCUS_POKEBALL: LootContextParam<PokeBall> = register(DataKeys.LootParamKeys.FOCUS_POKEBALL)
-        val ACTING_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.ACTING_POKEMON)
+        val FOCUS_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.FOCUS_POKEMON)
         val PREVIOUS_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.PREVIOUS_POKEMON)
 
         fun <T> register(resourceLocation: ResourceLocation): LootContextParam<T> {
@@ -139,11 +139,11 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
     }
 
     object LootItemConditionTypes {
-        val POKEMON_MATCHER_CONDITION =
-            register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CODEC)
         val CAUGHT_BALL_CONDITION = register(DataKeys.DropConditionKeys.CAUGHT_BALL, CaughtBallCondition.CODEC)
         val KNOWLEDGE_LEVEL_CONDITION =
             register(DataKeys.DropConditionKeys.KNOWLEDGE_LEVEL, KnowledgeLevelCondition.CODEC)
+        val POKEMON_MATCHER_CONDITION =
+            register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CODEC)
 
         fun <T : LootItemCondition> register(id: ResourceLocation, codec: MapCodec<T>): LootItemConditionType {
             return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, id, LootItemConditionType(codec))
@@ -160,10 +160,6 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
         registerReloadListener(DropperDataManager)
 
-        CobblemonEvents.LOOT_DROPPED.subscribe(Priority.NORMAL, BaseDropCatcher::handle)
-        CobblemonEvents.POKEMON_CAPTURED.subscribe(Priority.LOWEST, CapturedHandler::handle)
-        CobblemonEvents.HATCH_EGG_POST.subscribe(Priority.LOWEST, HatchedHandler::handle)
-        CobblemonEvents.EVOLUTION_COMPLETE.subscribe(Priority.LOWEST, EvolvedHandler::handle)
         CobblemonEvents.BATTLE_FAINTED.subscribe(Priority.LOWEST) { evt ->
             val loser = evt.killed
             val winners = loser.facedOpponents
@@ -171,12 +167,17 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             Events.SINGLE_DEFEAT.post(*(winners.map { winner -> SingleDefeatEvent(winner, loser, evt.battle) }
                 .toTypedArray()))
         }
-        CobblemonEvents.POKEMON_FAINTED.subscribe(Priority.LOWEST, KilledHandler::handle)
+
         Events.SINGLE_DEFEAT.subscribe(Priority.LOWEST, DefeatedHandler::handle)
-        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
-        CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
+        CobblemonEvents.EVOLUTION_COMPLETE.subscribe(Priority.LOWEST, EvolvedHandler::handle)
         CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
-        CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)
+        CobblemonEvents.HATCH_EGG_POST.subscribe(Priority.LOWEST, HatchedHandler::handle)
         CobblemonEvents.LEVEL_UP_EVENT.subscribe(Priority.LOWEST, LevelUpHandler::handle)
+        CobblemonEvents.LOOT_DROPPED.subscribe(Priority.NORMAL, BaseDropCatcher::handle)
+        CobblemonEvents.POKEMON_CAPTURED.subscribe(Priority.LOWEST, CapturedHandler::handle)
+        CobblemonEvents.POKEMON_FAINTED.subscribe(Priority.LOWEST, KilledHandler::handle)
+        CobblemonEvents.POKEMON_RELEASED_EVENT_POST.subscribe(Priority.LOWEST, ReleasedHandler::handle)
+        CobblemonEvents.STARTER_CHOSEN.subscribe(Priority.LOWEST, StarterChosenHandler::handle)
+        TimCoreEvents.POKEMON_TICKED.subscribe(Priority.LOWEST, TickedHandler::handle)
     }
 }

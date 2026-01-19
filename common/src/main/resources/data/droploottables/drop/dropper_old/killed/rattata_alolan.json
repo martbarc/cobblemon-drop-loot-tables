@@ -1,7 +1,0 @@
-{
-  "trigger": "droploottables:killed",
-  "matcher": [
-    "rattata form=Alola"
-  ],
-  "preserveBaseDrops": true
-}
