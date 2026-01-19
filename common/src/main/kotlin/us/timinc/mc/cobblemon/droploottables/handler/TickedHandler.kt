@@ -38,4 +38,11 @@ object TickedHandler : DropHandler<TickedDropper.Context, TickedDropper, Pokemon
     override fun getLevel(evt: PokemonEntityTickedEvent): ServerLevel = evt.entity.level() as ServerLevel
 
     override fun isRelevantEvent(evt: PokemonEntityTickedEvent): Boolean = evt.entity.level() is ServerLevel
+
+    override fun cleanup(evt: PokemonEntityTickedEvent) {
+        val context = getContext(evt)
+        val droppers = getDroppers(context) ?: return
+        val sounds = droppers.mapNotNull { it.sound }
+        sounds.forEach { it.emit(evt.entity.level() as ServerLevel, evt.entity.position()) }
+    }
 }

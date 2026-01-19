@@ -2,14 +2,18 @@ package us.timinc.mc.cobblemon.droploottables.dropper
 
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.pokemon.Pokemon
+import com.cobblemon.mod.common.util.playSoundServer
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
+import net.minecraft.world.phys.Vec3
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
@@ -23,7 +27,8 @@ class TickedDropper(
     override val lootTables: List<ResourceLocation>,
     override val conditions: List<LootItemCondition>,
     val ticks: Int,
-    val isWild: Boolean?,
+    val isWild: Boolean? = null,
+    val sound: SoundDescription? = null,
 ) : Dropper<TickedDropper.Context>() {
     companion object {
         val CODEC: MapCodec<TickedDropper> = RecordCodecBuilder.mapCodec { instance ->
@@ -32,10 +37,18 @@ class TickedDropper(
                 CodecPieces.getTables(TickedDropper::lootTables),
                 CodecPieces.getConditions(TickedDropper::conditions),
                 Codec.INT.fieldOf("ticks").forGetter(TickedDropper::ticks),
-                Codec.BOOL.optionalFieldOf("is_wild").forGetter { Optional.ofNullable(it.isWild) }
-            ).apply(instance) { trigger, conditions, tables, ticks, isWild ->
+                Codec.BOOL.optionalFieldOf("is_wild").forGetter { Optional.ofNullable(it.isWild) },
+                SoundDescription.CODEC.optionalFieldOf("sound").forGetter { Optional.ofNullable(it.sound) }
+            ).apply(instance) { trigger, conditions, tables, ticks, isWild, sound ->
                 if (ticks <= 0) throw Exception("Ticks must be a positive number.")
-                TickedDropper(trigger, conditions, tables, ticks, isWild.getOrNull())
+                TickedDropper(
+                    trigger,
+                    conditions,
+                    tables,
+                    ticks,
+                    isWild.getOrNull(),
+                    sound.getOrNull(),
+                )
             }
         }
 
@@ -71,5 +84,34 @@ class TickedDropper(
             mapOf(),
             0F
         )
+    }
+
+    data class SoundDescription(
+        val sound: ResourceLocation,
+        val volume: Float = 1F,
+        val pitch: Float = 1F,
+        val source: String = SoundSource.NEUTRAL.name,
+    ) {
+        companion object {
+            val CODEC: Codec<SoundDescription> = RecordCodecBuilder.create { instance ->
+                instance.group(
+                    ResourceLocation.CODEC.fieldOf("sound").forGetter(SoundDescription::sound),
+                    Codec.FLOAT.optionalFieldOf("volume", 1F).forGetter(SoundDescription::volume),
+                    Codec.FLOAT.optionalFieldOf("pitch", 1F).forGetter(SoundDescription::pitch),
+                    Codec.STRING.optionalFieldOf("source", SoundSource.NEUTRAL.name).forGetter(SoundDescription::source)
+                ).apply(instance, ::SoundDescription)
+            }
+        }
+
+        fun emit(level: ServerLevel, position: Vec3) {
+            val soundEvent = SoundEvent.createVariableRangeEvent(sound)
+            level.playSoundServer(
+                position,
+                soundEvent,
+                SoundSource.valueOf(source),
+                volume,
+                pitch,
+            )
+        }
     }
 }
