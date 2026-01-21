@@ -14,8 +14,10 @@ import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.api.extension.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.EvolvedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerEnderChestDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemReplaceDropTarget
 import java.util.*
 
 object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, EvolutionCompleteEvent> {
@@ -36,9 +38,21 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: EvolutionCompleteEvent) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.pokemon.getOwnerPlayer()!!) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.pokemon.entity?.let(::PokemonEntityDropTarget) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemDropTarget(evt.pokemon) }
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_ENDER_STORAGE to { evt ->
+                evt.pokemon.getOwnerPlayer()?.let(::PlayerEnderChestDropTarget)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt ->
+                evt.pokemon.getOwnerPlayer()?.let(::PlayerDropTarget)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt ->
+                evt.pokemon.entity?.let(::PokemonEntityDropTarget)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt ->
+                PokemonHeldItemDropTarget(evt.pokemon)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM_REPLACE to { evt ->
+                PokemonHeldItemReplaceDropTarget(evt.pokemon)
+            },
         )
 
     fun registerDropTargetType(id: ResourceLocation, getter: (evt: EvolutionCompleteEvent) -> DropTarget?) {

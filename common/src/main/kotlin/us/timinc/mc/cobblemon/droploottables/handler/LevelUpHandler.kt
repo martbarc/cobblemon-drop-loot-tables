@@ -10,11 +10,13 @@ import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.dropper.LevelUpDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerEnderChestDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemReplaceDropTarget
 
 object LevelUpHandler : DropHandler<LevelUpDropper.Context, LevelUpDropper, LevelUpEvent> {
-    override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.LEVEL_UP
+    override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.LEVELED
 
     override fun getContext(evt: LevelUpEvent): LevelUpDropper.Context = LevelUpDropper.Context(
         evt.pokemon.getOwnerPlayer()!!.level() as ServerLevel,
@@ -29,6 +31,9 @@ object LevelUpHandler : DropHandler<LevelUpDropper.Context, LevelUpDropper, Leve
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: LevelUpEvent) -> DropTarget?> =
         mutableMapOf(
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_ENDER_STORAGE to { evt ->
+                evt.pokemon.getOwnerPlayer()?.let(::PlayerEnderChestDropTarget)
+            },
             DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt ->
                 evt.pokemon.getOwnerPlayer()?.let(::PlayerDropTarget)
             },
@@ -37,7 +42,10 @@ object LevelUpHandler : DropHandler<LevelUpDropper.Context, LevelUpDropper, Leve
             },
             DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt ->
                 evt.pokemon.let(::PokemonHeldItemDropTarget)
-            }
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM_REPLACE to { evt ->
+                evt.pokemon.let(::PokemonHeldItemReplaceDropTarget)
+            },
         )
 
     @Suppress("unused")

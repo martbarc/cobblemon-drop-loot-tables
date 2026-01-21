@@ -8,5 +8,8 @@ import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 class PlayerDropTarget(
     val player: ServerPlayer,
 ) : DropTarget {
-    override fun dropTo(stack: ItemStack) = player.giveOrDropItemStack(stack)
+    override fun dropTo(stack: ItemStack): ItemStack {
+        player.giveOrDropItemStack(stack)
+        return ItemStack.EMPTY
+    }
 }

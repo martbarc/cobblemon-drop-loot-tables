@@ -26,6 +26,7 @@ class TickedDropper(
     override val trigger: ResourceLocation,
     override val lootTables: List<ResourceLocation>,
     override val conditions: List<LootItemCondition>,
+    override val dropTarget: ResourceLocation?,
     val ticks: Int,
     val isWild: Boolean? = null,
     val sound: SoundDescription? = null,
@@ -36,15 +37,17 @@ class TickedDropper(
                 CodecPieces.getTrigger(TickedDropper::trigger),
                 CodecPieces.getTables(TickedDropper::lootTables),
                 CodecPieces.getConditions(TickedDropper::conditions),
+                CodecPieces.getDropTarget(TickedDropper::dropTarget),
                 Codec.INT.fieldOf("ticks").forGetter(TickedDropper::ticks),
                 Codec.BOOL.optionalFieldOf("is_wild").forGetter { Optional.ofNullable(it.isWild) },
                 SoundDescription.CODEC.optionalFieldOf("sound").forGetter { Optional.ofNullable(it.sound) }
-            ).apply(instance) { trigger, conditions, tables, ticks, isWild, sound ->
+            ).apply(instance) { trigger, lootTables, conditions, dropTarget, ticks, isWild, sound ->
                 if (ticks <= 0) throw Exception("Ticks must be a positive number.")
                 TickedDropper(
                     trigger,
+                    lootTables,
                     conditions,
-                    tables,
+                    dropTarget.getOrNull(),
                     ticks,
                     isWild.getOrNull(),
                     sound.getOrNull(),
@@ -79,7 +82,8 @@ class TickedDropper(
             level,
             mapOf(
                 LootContextParams.ORIGIN to pokemonEntity.position(),
-                LootContextParams.THIS_ENTITY to pokemonEntity
+                LootContextParams.THIS_ENTITY to pokemonEntity,
+                DropLootTables.LootParams.FOCUS_POKEMON to focusPokemon
             ),
             mapOf(),
             0F

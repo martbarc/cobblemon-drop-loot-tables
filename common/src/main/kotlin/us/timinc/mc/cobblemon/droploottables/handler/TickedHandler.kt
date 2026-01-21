@@ -9,8 +9,10 @@ import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.dropper.TickedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerEnderChestDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemReplaceDropTarget
 import us.timinc.mc.cobblemon.timcore.event.PokemonEntityTickedEvent
 
 object TickedHandler : DropHandler<TickedDropper.Context, TickedDropper, PokemonEntityTickedEvent> {
@@ -18,11 +20,21 @@ object TickedHandler : DropHandler<TickedDropper.Context, TickedDropper, Pokemon
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: PokemonEntityTickedEvent) -> DropTarget?> =
         mutableMapOf(
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_ENDER_STORAGE to { evt ->
+                evt.entity.pokemon.getOwnerPlayer()?.let(::PlayerEnderChestDropTarget)
+            },
             DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt ->
                 evt.entity.pokemon.getOwnerPlayer()?.let(::PlayerDropTarget)
             },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> PokemonEntityDropTarget(evt.entity) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemDropTarget(evt.entity.pokemon) }
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt ->
+                PokemonEntityDropTarget(evt.entity)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt ->
+                PokemonHeldItemDropTarget(evt.entity.pokemon)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM_REPLACE to { evt ->
+                PokemonHeldItemReplaceDropTarget(evt.entity.pokemon)
+            },
         )
 
     override val selectedDropTargetTypes: List<ResourceLocation>

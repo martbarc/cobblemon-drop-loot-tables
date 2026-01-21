@@ -1,6 +1,7 @@
 package us.timinc.mc.cobblemon.droploottables.condition
 
 import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress
+import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import com.cobblemon.mod.common.util.pokedex
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
@@ -10,8 +11,9 @@ import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
-import us.timinc.mc.cobblemon.droploottables.api.condition.PlayerParamExtractor
-import us.timinc.mc.cobblemon.droploottables.api.condition.PokemonParamExtractor
+import us.timinc.mc.cobblemon.droploottables.MOD_ID
+import us.timinc.mc.cobblemon.droploottables.paramextractor.PlayerParamExtractor
+import us.timinc.mc.cobblemon.droploottables.paramextractor.PokemonParamExtractor
 
 class KnowledgeLevelCondition(
     val targetPokemon: ResourceLocation = DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON,
@@ -21,21 +23,21 @@ class KnowledgeLevelCondition(
     companion object {
         val CODEC: MapCodec<KnowledgeLevelCondition> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
-                ResourceLocation.CODEC.optionalFieldOf(
-                    "targetPokemon",
-                    DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON
+                Codec.STRING.optionalFieldOf(
+                    "target_pokemon",
+                    DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON.toString()
                 )
-                    .forGetter(KnowledgeLevelCondition::targetPokemon),
-                ResourceLocation.CODEC.optionalFieldOf(
-                    "targetPlayer",
-                    DropLootTables.DataKeys.LootParamKeys.FOCUS_PLAYER
+                    .forGetter { it.targetPokemon.toString() },
+                Codec.STRING.optionalFieldOf(
+                    "target_player",
+                    DropLootTables.DataKeys.LootParamKeys.FOCUS_PLAYER.toString()
                 )
-                    .forGetter(KnowledgeLevelCondition::targetPlayer),
+                    .forGetter { it.targetPlayer.toString() },
                 Codec.STRING.fieldOf("knowledge").forGetter { it.knowledge.name }
             ).apply(instance) { pokemon, player, knowledge ->
                 KnowledgeLevelCondition(
-                    pokemon,
-                    player,
+                    pokemon.asIdentifierDefaultingNamespace(MOD_ID),
+                    player.asIdentifierDefaultingNamespace(MOD_ID),
                     PokedexEntryProgress.valueOf(knowledge.uppercase())
                 )
             }

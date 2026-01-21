@@ -1,7 +1,8 @@
-package us.timinc.mc.cobblemon.droploottables.api.condition
+package us.timinc.mc.cobblemon.droploottables.paramextractor
 
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.pokemon.Pokemon
+import us.timinc.mc.cobblemon.droploottables.api.param.ParamExtractor
 
 object PokemonEntityParamExtractor : ParamExtractor<PokemonEntity> {
     override fun convert(param: Any): PokemonEntity? {

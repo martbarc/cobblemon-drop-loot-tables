@@ -1,6 +1,7 @@
 package us.timinc.mc.cobblemon.droploottables
 
 import com.cobblemon.mod.common.api.Priority
+import com.cobblemon.mod.common.api.battles.model.actor.BattleActor
 import com.cobblemon.mod.common.api.events.CobblemonEvents
 import com.cobblemon.mod.common.api.reactive.EventObservable
 import com.cobblemon.mod.common.pokeball.PokeBall
@@ -19,6 +20,7 @@ import us.timinc.mc.cobblemon.droploottables.api.DropperType
 import us.timinc.mc.cobblemon.droploottables.condition.CaughtBallCondition
 import us.timinc.mc.cobblemon.droploottables.condition.KnowledgeLevelCondition
 import us.timinc.mc.cobblemon.droploottables.condition.PokemonMatcherCondition
+import us.timinc.mc.cobblemon.droploottables.condition.TeamMatcherCondition
 import us.timinc.mc.cobblemon.droploottables.data.DropperDataManager
 import us.timinc.mc.cobblemon.droploottables.dropper.CapturedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.DefeatedDropper
@@ -32,6 +34,7 @@ import us.timinc.mc.cobblemon.droploottables.dropper.StarterChosenDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.TickedDropper
 import us.timinc.mc.cobblemon.droploottables.dropper.VictoryDropper
 import us.timinc.mc.cobblemon.droploottables.event.SingleDefeatEvent
+import us.timinc.mc.cobblemon.droploottables.event.SingleVictoryEvent
 import us.timinc.mc.cobblemon.droploottables.handler.BaseDropCatcher
 import us.timinc.mc.cobblemon.droploottables.handler.CapturedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.DefeatedHandler
@@ -43,6 +46,7 @@ import us.timinc.mc.cobblemon.droploottables.handler.ReleasedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.ResurrectedHandler
 import us.timinc.mc.cobblemon.droploottables.handler.StarterChosenHandler
 import us.timinc.mc.cobblemon.droploottables.handler.TickedHandler
+import us.timinc.mc.cobblemon.droploottables.handler.VictoryHandler
 import us.timinc.mc.cobblemon.timcore.AbstractConfig
 import us.timinc.mc.cobblemon.timcore.AbstractMod
 import us.timinc.mc.cobblemon.timcore.TimCoreEvents
@@ -61,6 +65,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         val resurrectedDropTargets: List<String> = listOf("player_inventory", "pokemon_world_position")
         val starterChosenDropTargets: List<String> = listOf("player_inventory")
         val tickedDropTargets: List<String> = listOf("pokemon_world_position")
+        val victoryDropTargets: List<String> = listOf("pokemon_world_position")
     }
 
     object DataKeys {
@@ -74,7 +79,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             val EVOLVED = modResource("evolved")
             val HATCHED = modResource("hatched")
             val KILLED = modResource("killed")
-            val LEVEL_UP = modResource("level_up")
+            val LEVELED = modResource("leveled")
             val RELEASED = modResource("released")
             val RESURRECTED = modResource("resurrected")
             val STARTER_CHOSEN = modResource("starter_chosen")
@@ -83,19 +88,23 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         }
 
         object DropTargetTypes {
+            val PLAYER_ENDER_STORAGE = modResource("player_ender_storage")
             val PLAYER_INVENTORY = modResource("player_inventory")
             val POKEMON_HELD_ITEM = modResource("pokemon_held_item")
+            val POKEMON_HELD_ITEM_REPLACE = modResource("pokemon_held_item_replace")
             val POKEMON_WORLD_POSITION = modResource("pokemon_world_position")
         }
 
         object DropConditionKeys {
             val CAUGHT_BALL = modResource("caught_ball")
-            val POKEMON_MATCHER = modResource("pokemon_matcher")
             val KNOWLEDGE_LEVEL = modResource("knowledge_level")
+            val POKEMON_MATCHER = modResource("pokemon_matcher")
+            val TEAM_MATCHER = modResource("team_matcher")
         }
 
         object LootParamKeys {
-            val ACTING_POKEMON = modResource("acting_pokemon")
+            val DEFEATED_POKEMON = modResource("defeated_pokemon")
+            val DEFEATING_POKEMON = modResource("defeating_pokemon")
             val FOCUS_PLAYER = modResource("focus_player")
             val FOCUS_POKEBALL = modResource("focus_pokeball")
             val FOCUS_POKEMON = modResource("focus_pokemon")
@@ -109,7 +118,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
         val EVOLVED = register(DataKeys.DropperTypes.EVOLVED, EvolvedDropper.DROPPER_TYPE)
         val HATCHED = register(DataKeys.DropperTypes.HATCHED, HatchedDropper.DROPPER_TYPE)
         val KILLED = register(DataKeys.DropperTypes.KILLED, KilledDropper.DROPPER_TYPE)
-        val LEVEL_UP = register(DataKeys.DropperTypes.LEVEL_UP, LevelUpDropper.DROPPER_TYPE)
+        val LEVELED = register(DataKeys.DropperTypes.LEVELED, LevelUpDropper.DROPPER_TYPE)
         val RELEASED = register(DataKeys.DropperTypes.RELEASED, ReleasedDropper.DROPPER_TYPE)
         val RESURRECTED = register(DataKeys.DropperTypes.RESURRECTED, ResurrectedDropper.DROPPER_TYPE)
         val STARTER_CHOSEN = register(DataKeys.DropperTypes.STARTER_CHOSEN, StarterChosenDropper.DROPPER_TYPE)
@@ -125,7 +134,8 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
     object LootParams {
         val params: MutableMap<ResourceLocation, LootContextParam<*>> = mutableMapOf()
 
-        val ACTING_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.ACTING_POKEMON)
+        val DEFEATED_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.DEFEATED_POKEMON)
+        val DEFEATING_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.DEFEATING_POKEMON)
         val FOCUS_PLAYER: LootContextParam<ServerPlayer> = register(DataKeys.LootParamKeys.FOCUS_PLAYER)
         val FOCUS_POKEBALL: LootContextParam<PokeBall> = register(DataKeys.LootParamKeys.FOCUS_POKEBALL)
         val FOCUS_POKEMON: LootContextParam<Pokemon> = register(DataKeys.LootParamKeys.FOCUS_POKEMON)
@@ -144,6 +154,8 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             register(DataKeys.DropConditionKeys.KNOWLEDGE_LEVEL, KnowledgeLevelCondition.CODEC)
         val POKEMON_MATCHER_CONDITION =
             register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CODEC)
+        val TEAM_MATCHER_CONDITION =
+            register(DataKeys.DropConditionKeys.TEAM_MATCHER, TeamMatcherCondition.CODEC)
 
         fun <T : LootItemCondition> register(id: ResourceLocation, codec: MapCodec<T>): LootItemConditionType {
             return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, id, LootItemConditionType(codec))
@@ -152,6 +164,7 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
 
     object Events {
         val SINGLE_DEFEAT = EventObservable<SingleDefeatEvent>()
+        val SINGLE_VICTORY = EventObservable<SingleVictoryEvent>()
     }
 
     init {
@@ -164,11 +177,30 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             val loser = evt.killed
             val winners = loser.facedOpponents
 
-            Events.SINGLE_DEFEAT.post(*(winners.map { winner -> SingleDefeatEvent(winner, loser, evt.battle) }
-                .toTypedArray()))
+            val events = winners.map { winner ->
+                SingleDefeatEvent(
+                    winner.effectedPokemon,
+                    loser.effectedPokemon,
+                    evt.battle,
+                )
+            }
+            Events.SINGLE_DEFEAT.post(*events.toTypedArray())
+        }
+        CobblemonEvents.BATTLE_VICTORY.subscribe(Priority.LOWEST) { evt ->
+            val events = evt.winners.flatMap(BattleActor::pokemonList).flatMap { winner ->
+                evt.losers.flatMap(BattleActor::pokemonList).map { loser ->
+                    SingleVictoryEvent(
+                        winner.effectedPokemon,
+                        loser.effectedPokemon,
+                        evt.battle,
+                    )
+                }
+            }
+            Events.SINGLE_VICTORY.post(*events.toTypedArray())
         }
 
         Events.SINGLE_DEFEAT.subscribe(Priority.LOWEST, DefeatedHandler::handle)
+        Events.SINGLE_VICTORY.subscribe(Priority.LOWEST, VictoryHandler::handle)
         CobblemonEvents.EVOLUTION_COMPLETE.subscribe(Priority.LOWEST, EvolvedHandler::handle)
         CobblemonEvents.FOSSIL_REVIVED.subscribe(Priority.LOWEST, ResurrectedHandler::handle)
         CobblemonEvents.HATCH_EGG_POST.subscribe(Priority.LOWEST, HatchedHandler::handle)

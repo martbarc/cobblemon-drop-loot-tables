@@ -18,11 +18,13 @@ import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
+import kotlin.jvm.optionals.getOrNull
 
 class KilledDropper(
     override val trigger: ResourceLocation,
     override val lootTables: List<ResourceLocation>,
     override val conditions: List<LootItemCondition>,
+    override val dropTarget: ResourceLocation?,
     val preserveBaseDrops: Boolean = false,
 ) : Dropper<KilledDropper.Context>() {
     companion object {
@@ -31,9 +33,18 @@ class KilledDropper(
                 CodecPieces.getTrigger(KilledDropper::trigger),
                 CodecPieces.getTables(KilledDropper::lootTables),
                 CodecPieces.getConditions(KilledDropper::conditions),
-                Codec.BOOL.optionalFieldOf("preserveBaseDrops", false)
+                CodecPieces.getDropTarget(KilledDropper::dropTarget),
+                Codec.BOOL.optionalFieldOf("preserve_base_drops", false)
                     .forGetter(KilledDropper::preserveBaseDrops),
-            ).apply(instance, ::KilledDropper)
+            ).apply(instance) { trigger, lootTables, conditions, dropTarget, preserveBaseDrops ->
+                KilledDropper(
+                    trigger,
+                    lootTables,
+                    conditions,
+                    dropTarget.getOrNull(),
+                    preserveBaseDrops,
+                )
+            }
         }
 
         val DROPPER_TYPE = DropperType(CODEC)

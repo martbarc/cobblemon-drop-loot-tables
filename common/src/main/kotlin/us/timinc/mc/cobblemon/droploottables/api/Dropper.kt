@@ -26,6 +26,9 @@ abstract class Dropper<T : DropContext> {
 
             fun <T : Dropper<*>> getConditions(getter: (dropper: T) -> List<LootItemCondition>): RecordCodecBuilder<T, List<LootItemCondition>> =
                 LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", emptyList()).forGetter(getter)
+
+            fun <T : Dropper<*>> getDropTarget(getter: (dropper: T) -> ResourceLocation?): RecordCodecBuilder<T, Optional<ResourceLocation>> =
+                ResourceLocation.CODEC.optionalFieldOf("drop_target").forGetter { Optional.ofNullable(getter(it)) }
         }
     }
 
@@ -34,6 +37,7 @@ abstract class Dropper<T : DropContext> {
     abstract val trigger: ResourceLocation
     abstract val lootTables: List<ResourceLocation>
     abstract val conditions: List<LootItemCondition>
+    abstract val dropTarget: ResourceLocation?
     abstract fun getType(): DropperType<*, *>
     open fun canDrop(context: T): Boolean = conditions.all {
         it.test(LootContext.Builder(context.toLootParams()).create(Optional.empty()))

@@ -14,11 +14,13 @@ import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
+import kotlin.jvm.optionals.getOrNull
 
 class ReleasedDropper(
     override val trigger: ResourceLocation,
     override val lootTables: List<ResourceLocation>,
     override val conditions: List<LootItemCondition>,
+    override val dropTarget: ResourceLocation?,
 ) : Dropper<ReleasedDropper.Context>() {
     companion object {
         val CODEC: MapCodec<ReleasedDropper> = RecordCodecBuilder.mapCodec { instance ->
@@ -26,7 +28,15 @@ class ReleasedDropper(
                 CodecPieces.getTrigger(ReleasedDropper::trigger),
                 CodecPieces.getTables(ReleasedDropper::lootTables),
                 CodecPieces.getConditions(ReleasedDropper::conditions),
-            ).apply(instance, ::ReleasedDropper)
+                CodecPieces.getDropTarget(ReleasedDropper::dropTarget),
+            ).apply(instance) { trigger, lootTables, conditions, dropTarget ->
+                ReleasedDropper(
+                    trigger,
+                    lootTables,
+                    conditions,
+                    dropTarget.getOrNull(),
+                )
+            }
         }
 
         val DROPPER_TYPE = DropperType(CODEC)

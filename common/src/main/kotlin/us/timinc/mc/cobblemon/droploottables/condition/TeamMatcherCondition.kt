@@ -10,29 +10,29 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.MOD_ID
-import us.timinc.mc.cobblemon.droploottables.paramextractor.PokemonParamExtractor
+import us.timinc.mc.cobblemon.droploottables.paramextractor.TeamParamExtractor
 import us.timinc.mc.cobblemon.timcore.LimitedList
 import us.timinc.mc.cobblemon.timcore.PokemonMatcher
 
-class PokemonMatcherCondition(
-    val targetPokemon: ResourceLocation = DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON,
+class TeamMatcherCondition(
+    val targetTeam: ResourceLocation = DropLootTables.DataKeys.LootParamKeys.FOCUS_PLAYER,
     val matcher: Set<PokemonMatcher>,
     val antiMatcher: Set<PokemonMatcher>,
 ) : LootItemCondition {
     companion object {
-        val CODEC: MapCodec<PokemonMatcherCondition> = RecordCodecBuilder.mapCodec { instance ->
+        val CODEC: MapCodec<TeamMatcherCondition> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
                 Codec.STRING.optionalFieldOf(
-                    "target_pokemon",
+                    "target_team",
                     DropLootTables.DataKeys.LootParamKeys.FOCUS_POKEMON.toString()
                 )
-                    .forGetter { it.targetPokemon.toString() },
+                    .forGetter { it.targetTeam.toString() },
                 PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("matcher", emptyList())
                     .forGetter { it.matcher.toList() },
                 PokemonMatcher.STRING_CODEC.listOf().optionalFieldOf("anti_matcher", emptyList())
                     .forGetter { it.antiMatcher.toList() },
             ).apply(instance) { target, matcher, antiMatcher ->
-                PokemonMatcherCondition(
+                TeamMatcherCondition(
                     target.asIdentifierDefaultingNamespace(MOD_ID),
                     matcher.toSet(),
                     antiMatcher.toSet()
@@ -41,10 +41,10 @@ class PokemonMatcherCondition(
         }
     }
 
-    override fun getType(): LootItemConditionType = DropLootTables.LootItemConditionTypes.POKEMON_MATCHER_CONDITION
+    override fun getType(): LootItemConditionType = DropLootTables.LootItemConditionTypes.TEAM_MATCHER_CONDITION
 
     override fun test(ctx: LootContext): Boolean {
-        val pokemon = PokemonParamExtractor.getFrom(ctx, targetPokemon) ?: return false
-        return LimitedList.PokemonMatcherList.matchesList(pokemon, matcher, antiMatcher)
+        val team = TeamParamExtractor.getFrom(ctx, targetTeam) ?: return false
+        return team.any { pokemon -> LimitedList.PokemonMatcherList.matchesList(pokemon, matcher, antiMatcher) }
     }
 }

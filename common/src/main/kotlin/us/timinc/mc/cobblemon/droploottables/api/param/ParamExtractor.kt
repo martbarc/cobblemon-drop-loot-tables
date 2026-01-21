@@ -1,4 +1,4 @@
-package us.timinc.mc.cobblemon.droploottables.api.condition
+package us.timinc.mc.cobblemon.droploottables.api.param
 
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.storage.loot.LootContext

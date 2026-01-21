@@ -10,6 +10,7 @@ import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.dropper.ReleasedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerEnderChestDropTarget
 
 object ReleasedHandler : DropHandler<ReleasedDropper.Context, ReleasedDropper, ReleasePokemonEvent.Post> {
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.RELEASED
@@ -24,7 +25,12 @@ object ReleasedHandler : DropHandler<ReleasedDropper.Context, ReleasedDropper, R
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: ReleasePokemonEvent.Post) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> PlayerDropTarget(evt.player) }
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_ENDER_STORAGE to { evt ->
+                PlayerEnderChestDropTarget(evt.player)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt ->
+                PlayerDropTarget(evt.player)
+            }
         )
 
     fun registerDropTargetType(id: ResourceLocation, getter: (evt: ReleasePokemonEvent.Post) -> DropTarget?) {

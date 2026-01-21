@@ -9,7 +9,7 @@ import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
 import us.timinc.mc.cobblemon.droploottables.DropLootTables
-import us.timinc.mc.cobblemon.droploottables.api.condition.PokeBallParamExtractor
+import us.timinc.mc.cobblemon.droploottables.paramextractor.PokeBallParamExtractor
 
 class CaughtBallCondition(
     val balls: List<ResourceLocation>,

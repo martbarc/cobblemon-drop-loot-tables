@@ -15,11 +15,13 @@ import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.Dropper.Companion.CodecPieces
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
+import kotlin.jvm.optionals.getOrNull
 
 class LevelUpDropper(
     override val trigger: ResourceLocation,
     override val lootTables: List<ResourceLocation>,
     override val conditions: List<LootItemCondition>,
+    override val dropTarget: ResourceLocation?,
     val level: Int,
 ) : Dropper<LevelUpDropper.Context>() {
     companion object {
@@ -28,14 +30,23 @@ class LevelUpDropper(
                 CodecPieces.getTrigger(LevelUpDropper::trigger),
                 CodecPieces.getTables(LevelUpDropper::lootTables),
                 CodecPieces.getConditions(LevelUpDropper::conditions),
+                CodecPieces.getDropTarget(LevelUpDropper::dropTarget),
                 Codec.INT.fieldOf("level").forGetter(LevelUpDropper::level)
-            ).apply(instance, ::LevelUpDropper)
+            ).apply(instance) { trigger, lootTables, conditions, dropTarget, level ->
+                LevelUpDropper(
+                    trigger,
+                    lootTables,
+                    conditions,
+                    dropTarget.getOrNull(),
+                    level,
+                )
+            }
         }
 
         val DROPPER_TYPE = DropperType(CODEC)
     }
 
-    override fun getType(): DropperType<*, *> = DropLootTables.DropperTypes.LEVEL_UP
+    override fun getType(): DropperType<*, *> = DropLootTables.DropperTypes.LEVELED
 
     class Context(
         override val level: ServerLevel,

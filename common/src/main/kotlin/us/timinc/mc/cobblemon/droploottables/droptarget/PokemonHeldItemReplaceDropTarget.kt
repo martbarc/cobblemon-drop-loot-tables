@@ -4,11 +4,10 @@ import com.cobblemon.mod.common.pokemon.Pokemon
 import net.minecraft.world.item.ItemStack
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 
-class PokemonHeldItemDropTarget(
+class PokemonHeldItemReplaceDropTarget(
     val pokemon: Pokemon,
 ) : DropTarget {
     override fun dropTo(stack: ItemStack): ItemStack {
-        if (!pokemon.heldItem().isEmpty) return stack
         pokemon.swapHeldItem(stack, false)
         return ItemStack.EMPTY
     }

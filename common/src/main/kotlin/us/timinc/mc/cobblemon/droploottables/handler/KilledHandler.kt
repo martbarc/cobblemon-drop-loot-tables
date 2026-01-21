@@ -17,6 +17,7 @@ import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.api.extension.buildItem
 import us.timinc.mc.cobblemon.droploottables.dropper.KilledDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerEnderChestDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
 import java.util.*
 
@@ -38,6 +39,9 @@ object KilledHandler : DropHandler<KilledDropper.Context, KilledDropper, Pokemon
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: PokemonFaintedEvent) -> DropTarget?> =
         mutableMapOf(
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_ENDER_STORAGE to { evt ->
+                evt.pokemon.getOwnerPlayer()?.let(::PlayerEnderChestDropTarget)
+            },
             DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt ->
                 evt.pokemon.getOwnerPlayer()?.let(::PlayerDropTarget)
             },

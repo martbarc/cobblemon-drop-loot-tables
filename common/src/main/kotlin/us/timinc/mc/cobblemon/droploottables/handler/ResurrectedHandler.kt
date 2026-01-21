@@ -10,8 +10,10 @@ import us.timinc.mc.cobblemon.droploottables.api.DropHandler
 import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 import us.timinc.mc.cobblemon.droploottables.dropper.ResurrectedDropper
 import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PlayerEnderChestDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonEntityDropTarget
 import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemDropTarget
+import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemReplaceDropTarget
 
 object ResurrectedHandler : DropHandler<ResurrectedDropper.Context, ResurrectedDropper, FossilRevivedEvent> {
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.RESURRECTED
@@ -27,9 +29,21 @@ object ResurrectedHandler : DropHandler<ResurrectedDropper.Context, ResurrectedD
 
     override val dropTargetTypes: MutableMap<ResourceLocation, (evt: FossilRevivedEvent) -> DropTarget?> =
         mutableMapOf(
-            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt -> evt.player?.let(::PlayerDropTarget) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt -> evt.pokemon.entity?.let(::PokemonEntityDropTarget) },
-            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt -> PokemonHeldItemDropTarget(evt.pokemon) }
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_ENDER_STORAGE to { evt ->
+                evt.player?.let(::PlayerEnderChestDropTarget)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.PLAYER_INVENTORY to { evt ->
+                evt.player?.let(::PlayerDropTarget)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_WORLD_POSITION to { evt ->
+                evt.pokemon.entity?.let(::PokemonEntityDropTarget)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM to { evt ->
+                PokemonHeldItemDropTarget(evt.pokemon)
+            },
+            DropLootTables.DataKeys.DropTargetTypes.POKEMON_HELD_ITEM_REPLACE to { evt ->
+                PokemonHeldItemReplaceDropTarget(evt.pokemon)
+            },
         )
 
     fun registerDropTargetType(id: ResourceLocation, getter: (evt: FossilRevivedEvent) -> DropTarget?) {

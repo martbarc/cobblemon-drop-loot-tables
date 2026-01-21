@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.item.ItemStack
+import us.timinc.mc.cobblemon.droploottables.DropLootTables
 import us.timinc.mc.cobblemon.droploottables.data.DropperDataManager
 
 interface DropHandler<C : DropContext, D : Dropper<C>, E> {
@@ -18,28 +19,47 @@ interface DropHandler<C : DropContext, D : Dropper<C>, E> {
 
     fun handle(evt: E) {
         if (!isRelevantEvent(evt)) return
-        val dropTarget = getDropTarget(evt) ?: return
+        val dropTargets = getDropTarget(evt) ?: return
         val ctx = getContext(evt)
         val droppers = getDroppers(ctx)
         val drops: MutableList<ItemStack> = droppers?.flatMap { dropper ->
-            dropper.lootTables.flatMap { tableId ->
+            val toDrop = dropper.lootTables.flatMap { tableId ->
                 dropFromTable(
                     tableId,
                     ctx.toLootParams(),
                     getLevel(evt) as ServerLevel
                 )
             }
+
+            dropper.dropTarget?.let { overridingDropTargetId ->
+                val dropTargetFunc = dropTargetTypes[overridingDropTargetId] ?: return@flatMap emptyList()
+                val dropTarget = dropTargetFunc(evt) ?: return@flatMap emptyList()
+                toDrop.forEach(dropTarget::dropTo)
+
+                return@flatMap emptyList()
+            }
+
+            toDrop
         }?.toMutableList() ?: mutableListOf()
         drops.addAll(processOtherDrops(evt))
-        dropTarget.dropTo(drops)
+        drops.shuffle()
+
+        for (drop in drops) {
+            var toDrop = drop.copy()
+            for (dropTarget in dropTargets) {
+                toDrop = dropTarget.dropTo(toDrop)
+                if (toDrop.isEmpty) continue
+            }
+        }
+
         cleanup(evt)
     }
 
     val dropTargetTypes: MutableMap<ResourceLocation, (evt: E) -> DropTarget?>
     val selectedDropTargetTypes: List<ResourceLocation>
 
-    fun getDropTarget(evt: E): DropTarget? =
-        selectedDropTargetTypes.firstNotNullOfOrNull { id -> dropTargetTypes[id]?.invoke(evt) }
+    fun getDropTarget(evt: E): List<DropTarget>? =
+        selectedDropTargetTypes.mapNotNull { id -> dropTargetTypes[id]?.invoke(evt) }
 
     fun lootTableExists(level: ServerLevel, tableId: ResourceLocation) =
         level.server.reloadableRegistries().getKeys(Registries.LOOT_TABLE).contains(tableId)

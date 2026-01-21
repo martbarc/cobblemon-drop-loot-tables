@@ -9,7 +9,7 @@ import us.timinc.mc.cobblemon.droploottables.api.DropTarget
 class PokemonEntityDropTarget(
     val pokemonEntity: PokemonEntity,
 ) : DropTarget {
-    override fun dropTo(stack: ItemStack) {
+    override fun dropTo(stack: ItemStack): ItemStack {
         val level = pokemonEntity.level() as ServerLevel
         val stackEntity = ItemEntity(
             level,
@@ -19,5 +19,6 @@ class PokemonEntityDropTarget(
             stack
         )
         level.addFreshEntity(stackEntity)
+        return ItemStack.EMPTY
     }
 }
