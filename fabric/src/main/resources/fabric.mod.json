@@ -29,5 +29,8 @@
     "issues": "${modIssues}",
     "sources": "${modSource}"
   },
-  "icon": "${modId}_small.png"
+  "icon": "${modId}_small.png",
+  "mixins": [
+    "mixins.droploottables.json"
+  ]
 }

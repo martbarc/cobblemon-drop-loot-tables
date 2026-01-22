@@ -39,6 +39,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${property("junit_version")}")
 
     modImplementation("maven.modrinth:cobblemon-tim-core:${property("tim_core_fabric_version")}")
+    modImplementation("maven.modrinth:cobblemon-counter:${property("counter_fabric_version")}")
 }
 
 tasks.getByName<Test>("test") {
