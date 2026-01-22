@@ -17,6 +17,7 @@ dependencies {
     modImplementation("com.cobblemon:mod:${property("cobblemon_version")}") { isTransitive = false }
 
     modImplementation("maven.modrinth:cobblemon-tim-core:${property("tim_core_fabric_version")}")
+    modImplementation("maven.modrinth:cobblemon-counter:${property("counter_fabric_version")}")
 
     annotationProcessor("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
     compileOnly("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
