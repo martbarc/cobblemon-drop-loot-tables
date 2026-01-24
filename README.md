@@ -95,7 +95,7 @@ Check out the demo pack below. It has the following basic examples:
 
 ## Known Issues
 
-- None. Yet. Why? Who’s asking? 👀
+- ≤v1.7.1-1.6.0 wouldn’t preserve base mod drops properly. v1.7.1-1.6.1 fixes this.
 
 ## Roadmap
 
