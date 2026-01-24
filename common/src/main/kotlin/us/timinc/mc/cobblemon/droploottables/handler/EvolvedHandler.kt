@@ -21,7 +21,8 @@ import us.timinc.mc.cobblemon.droploottables.droptarget.PokemonHeldItemReplaceDr
 import java.util.*
 
 object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, EvolutionCompleteEvent> {
-    val baseDrops: MutableMap<UUID, List<DropEntry>> = mutableMapOf()
+    val baseDrops: MutableMap<UUID, MutableList<DropEntry>> = mutableMapOf()
+    val whoEvolvingWho: MutableMap<UUID, UUID> = mutableMapOf()
 
     override val dropperTypeId: ResourceLocation = DropLootTables.DataKeys.DropperTypes.EVOLVED
 
@@ -69,9 +70,9 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
     override fun processOtherDrops(evt: EvolutionCompleteEvent): List<ItemStack> {
         val ctx = getContext(evt)
         val droppers = getDroppers(ctx) ?: emptyList()
-        if (!droppers.any(EvolvedDropper::preserveBaseDrops)) return emptyList()
+        if (!droppers.isEmpty() && !droppers.any(EvolvedDropper::preserveBaseDrops)) return emptyList()
 
-        val caughtBaseDrops = baseDrops[evt.pokemon.uuid] ?: emptyList()
+        val caughtBaseDrops = evt.pokemon.uuid.let(baseDrops::get) ?: emptyList()
 
         return caughtBaseDrops.mapNotNull { baseDrop ->
             if (baseDrop !is ItemDropEntry) {
@@ -85,6 +86,7 @@ object EvolvedHandler : DropHandler<EvolvedDropper.Context, EvolvedDropper, Evol
     }
 
     override fun cleanup(evt: EvolutionCompleteEvent) {
+        evt.pokemon.getOwnerUUID()?.let(whoEvolvingWho::remove)
         baseDrops.remove(evt.pokemon.uuid)
     }
 }
