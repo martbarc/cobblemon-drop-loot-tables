@@ -65,9 +65,9 @@ object DefeatedHandler : DropHandler<DefeatedDropper.Context, DefeatedDropper, S
     override fun processOtherDrops(evt: SingleDefeatEvent): List<ItemStack> {
         val ctx = getContext(evt)
         val droppers = getDroppers(ctx) ?: emptyList()
-        if (!droppers.any(DefeatedDropper::preserveBaseDrops)) return emptyList()
+        if (!droppers.isEmpty() && !droppers.any(DefeatedDropper::preserveBaseDrops)) return emptyList()
 
-        val caughtBaseDrops = baseDrops[evt.winner.uuid] ?: emptyList()
+        val caughtBaseDrops = baseDrops[evt.loser.uuid] ?: emptyList()
 
         return caughtBaseDrops.mapNotNull { baseDrop ->
             if (baseDrop !is ItemDropEntry) {
