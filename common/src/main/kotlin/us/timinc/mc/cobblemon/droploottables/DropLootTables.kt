@@ -17,8 +17,10 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType
 import us.timinc.mc.cobblemon.droploottables.api.DropContext
 import us.timinc.mc.cobblemon.droploottables.api.Dropper
 import us.timinc.mc.cobblemon.droploottables.api.DropperType
+import us.timinc.mc.cobblemon.droploottables.condition.AbilityCondition
 import us.timinc.mc.cobblemon.droploottables.condition.CaughtBallCondition
 import us.timinc.mc.cobblemon.droploottables.condition.KnowledgeLevelCondition
+import us.timinc.mc.cobblemon.droploottables.condition.MovesCondition
 import us.timinc.mc.cobblemon.droploottables.condition.PokemonMatcherCondition
 import us.timinc.mc.cobblemon.droploottables.condition.TeamMatcherCondition
 import us.timinc.mc.cobblemon.droploottables.data.DropperDataManager
@@ -100,6 +102,8 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             val KNOWLEDGE_LEVEL = modResource("knowledge_level")
             val POKEMON_MATCHER = modResource("pokemon_matcher")
             val TEAM_MATCHER = modResource("team_matcher")
+            val ABILITY = modResource("ability")
+            val MOVES = modResource("moves")
         }
 
         object LootParamKeys {
@@ -156,6 +160,10 @@ object DropLootTables : AbstractMod<DropLootTables.DropLootTablesConfig>(MOD_ID,
             register(DataKeys.DropConditionKeys.POKEMON_MATCHER, PokemonMatcherCondition.CODEC)
         val TEAM_MATCHER_CONDITION =
             register(DataKeys.DropConditionKeys.TEAM_MATCHER, TeamMatcherCondition.CODEC)
+        val ABILITY_CONDITION =
+            register(DataKeys.DropConditionKeys.ABILITY, AbilityCondition.CODEC)
+        val MOVES_CONDITION =
+            register(DataKeys.DropConditionKeys.MOVES, MovesCondition.CODEC)
 
         fun <T : LootItemCondition> register(id: ResourceLocation, codec: MapCodec<T>): LootItemConditionType {
             return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, id, LootItemConditionType(codec))
