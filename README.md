@@ -1,6 +1,6 @@
 # Drop Loot Tables
 
-v1.7.1-1.6
+v1.7.2-1.7
 
 [Modrinth](https://modrinth.com/mod/cobblemon-droploottables)
 
@@ -63,39 +63,39 @@ Check out the demo pack below. It has the following basic examples:
 - The Pidgey line will drop a feather or a random Pokémon feather every 20 ticks and emit a wing flapping sound.
 - A Shuckle participating in battle on the winning side while holding a berry will turn that berry into berry juice.
 
-[Demo Pack](https://www.notion.so/Demo-Pack-2f057e0d4afd811cb1ead90b07173f80?pvs=21)
+[Demo Pack](https://www.notion.so/Demo-Pack-2f657e0d4afd81e48739e20a5b0d0989?pvs=21)
 
 ## Player Help
 
-[How it works](https://www.notion.so/How-it-works-2f057e0d4afd81d9bfaee2b1892e756b?pvs=21)
+[How it works](https://www.notion.so/How-it-works-2f657e0d4afd81378d57ff119a77f53d?pvs=21)
 
-[Config Options](https://www.notion.so/Config-Options-2f057e0d4afd81f6991eff7d1578ca84?pvs=21)
+[Config Options](https://www.notion.so/Config-Options-2f657e0d4afd81939870d0d17dc6e898?pvs=21)
 
 ## Addon Dev Help
 
 ### Data Pack Help
 
-[Making an Addon](https://www.notion.so/Making-an-Addon-2f057e0d4afd8100be80c24ee988249a?pvs=21)
+[Making an Addon](https://www.notion.so/Making-an-Addon-2f657e0d4afd812b8842d94de94241e8?pvs=21)
 
 ## Mod Dev Help
 
-[Make your own dropper type](https://www.notion.so/Make-your-own-dropper-type-2f057e0d4afd81308f5ce4fd38a08292?pvs=21)
+[Make your own dropper type](https://www.notion.so/Make-your-own-dropper-type-2f657e0d4afd81a1bd79cc83e0ac91e8?pvs=21)
 
-[Make your own condition](https://www.notion.so/Make-your-own-condition-2f057e0d4afd8118b18bc15ad9753af5?pvs=21)
+[Make your own condition](https://www.notion.so/Make-your-own-condition-2f657e0d4afd81b8a4ced4542f01e84b?pvs=21)
 
-[Register a new drop target](https://www.notion.so/Register-a-new-drop-target-2f057e0d4afd8189a055c2d47be62350?pvs=21)
+[Register a new drop target](https://www.notion.so/Register-a-new-drop-target-2f657e0d4afd81158d03dd80529318c3?pvs=21)
 
 ## Parts
 
-[Drop Target Types](https://www.notion.so/Drop-Target-Types-2f057e0d4afd81c7808afdae7d8c2da6?pvs=21)
+[Drop Target Types](https://www.notion.so/Drop-Target-Types-2f657e0d4afd8119a904c0e1c51ba633?pvs=21)
 
-[Dropper Type](https://www.notion.so/Dropper-Type-2f057e0d4afd8140a02cc1d9b8f9d587?pvs=21)
+[Dropper Type](https://www.notion.so/Dropper-Type-2f657e0d4afd818fbc14f48ca18391bc?pvs=21)
 
-[Drop Conditions](https://www.notion.so/Drop-Conditions-2f057e0d4afd81628edec3abf9168bef?pvs=21)
+[Drop Conditions](https://www.notion.so/Drop-Conditions-2f657e0d4afd81bd813fe42af3d4e8eb?pvs=21)
 
 ## Known Issues
 
-- ≤v1.7.1-1.6.0 wouldn’t preserve base mod drops properly. v1.7.1-1.6.1 fixes this.
+- None. Why? Who’s asking? 👀
 
 ## Roadmap
 
