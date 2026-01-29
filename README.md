@@ -95,7 +95,7 @@ Check out the demo pack below. It has the following basic examples:
 
 ## Known Issues
 
-- None. Why? Who’s asking? 👀
+- v1.7.2-1.7.0 had a typo on the mixins reference in the NeoForge version. v1.7.2-1.7.1 fixed this.
 
 ## Roadmap
 
