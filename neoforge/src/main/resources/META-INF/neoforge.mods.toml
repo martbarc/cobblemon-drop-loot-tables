@@ -14,7 +14,7 @@ displayUrl="${modDiscord}"
 modUrl="${modSource}"
 
 [[mixins]]
-config = "mixins.droplootables.json"
+config = "mixins.droploottables.json"
 
 [[dependencies.${modId}]]
 modId = "minecraft"
